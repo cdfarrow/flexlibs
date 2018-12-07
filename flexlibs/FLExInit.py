@@ -10,6 +10,7 @@
 #   Usage:  Call Initialize() and Cleanup() from the main application.
 #
 #   Platform: Python.NET & IRONPython
+#             FieldWorks Version 9
 #
 #   Copyright Craig Farrow, 2011 - 2018
 #

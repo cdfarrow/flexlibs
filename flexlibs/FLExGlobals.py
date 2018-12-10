@@ -14,6 +14,7 @@
 
 import sys
 import os
+import platform
 import glob
 import shutil
 
@@ -31,16 +32,21 @@ from Microsoft.Win32 import Registry, RegistryKey
 #----------------------------------------------------------------
 # Fieldworks registry constants
 
-FWRegKeys = { "9" : r"SOFTWARE\SIL\Fieldworks\9" }
+FWRegKeys = { "9" : {
+                        "default": r"SOFTWARE\SIL\Fieldworks\9",
+                        "wow64": r"SOFTWARE\WOW6432Node\SIL\Fieldworks\9"
+                    }
+            }
 
 FWRegCodeDir = "RootCodeDir"
 FWRegProjectsDir = "ProjectsDir"
 
 #----------------------------------------------------------------
 def GetFWRegKey(fwVersion):
-
+    bits = platform.architecture()[0]
+    print fwVersion
     try:
-        RegKey = FWRegKeys[fwVersion]
+        RegKey = FWRegKeys[fwVersion]["default"]
     except KeyError:
         raise Exception("Error: Unsupported Fieldworks version (%s)" % fwVersion)
 
@@ -48,11 +54,21 @@ def GetFWRegKey(fwVersion):
     print "GetFWRegKey: CurrentUser = ", rKey
     if rKey and rKey.GetValue(FWRegCodeDir):
         return rKey
-        
+    elif bits == "32bit":
+        rKey = Registry.CurrentUser.OpenSubKey(FWRegKeys[fwVersion]["wow64"])
+        print "GetFWRegKey: CurrentUser = ", rKey
+        if rKey and rKey.GetValue(FWRegCodeDir):
+            return rKey
+
     rKey = Registry.LocalMachine.OpenSubKey(RegKey)
     print "GetFWRegKey: LocalMachine = ", rKey
     if rKey and rKey.GetValue(FWRegCodeDir):
         return rKey
+    elif bits == "32bit":
+        rKey = Registry.LocalMachine.OpenSubKey(FWRegKeys[fwVersion]["wow64"])
+        print "GetFWRegKey: LocalMachine = ", rKey
+        if rKey and rKey.GetValue(FWRegCodeDir):
+                return rKey
 
     return None
 
@@ -101,8 +117,14 @@ def InitialiseFWGlobals():
             # raise Exception("Error: Can't find path for FieldWorks.exe.")
         
     # FW9 TODO - dynamically find the paths
-    FWCodeDir       = r"C:\Program Files (x86)\SIL\FieldWorks 9" #codeDir
-    FWProjectsDir   = r"C:\ProgramData\SIL\FieldWorks\Projects" #projectsDir
+    rKey = GetFWRegKey(FWMajorVersion)
+    if not rKey:
+        raise Exception("Can't find Fieldworks %s!" % FWMajorVersion)
+
+    FWCodeDir = rKey.GetValue(FWRegCodeDir)
+    FWProjectsDir = rKey.GetValue(FWRegProjectsDir)
+    # FWCodeDir       = r"C:\Program Files\SIL\FieldWorks 9" #codeDir
+    # FWProjectsDir   = r"C:\ProgramData\SIL\FieldWorks\Projects" #projectsDir
 
     print "FLExGlobals: FWCodeDir =", FWCodeDir
     print "FLExGlobals: FWProjectsDir =", FWProjectsDir

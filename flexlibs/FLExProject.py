@@ -75,7 +75,7 @@ class FDA_FileLockedError(FDA_ProjectError):
 class FDA_MigrationRequired(FDA_ProjectError):
     def __init__(self):
         FDA_ProjectError.__init__(self,
-            "This project needs to be migrated to the latest version. Open the project in Fieldworks to do the migration.")
+            "This project needs to be migrated to the latest format. Open the project in Fieldworks to do the migration.")
 
 #-----------------------------------------------------            
 
@@ -122,22 +122,30 @@ class FLExProject (object):
         return FLExLCM.GetListOfProjects()
 
         
-    def OpenProject(self, projectName, writeEnabled = False, verbose = False):
+    def OpenProject(self, projectName, 
+                    writeEnabled = False, 
+                    allowMigration = False,
+                    verbose = False):
         """
         Open the project given by projectName:
             - Either the full path including ".fwdata" suffix, or
             - The name only, opened from the default project location.
             
-        The verbose flag controls logging/debug messages to the console.
-        The writeEnabled flag configures FW to accept database changes, and
-        saves those when this object is deleted. It will also be used to
-        open the FW project in read-only mode so that FW doesn't have to
-        be closed for read-only operations. (Awaiting support in a future
-        release of FW)
+        writeEnabled: configures FW to accept database changes, and
+            saves those when this object is deleted. It will also be used to
+            open the FW project in read-only mode so that FW doesn't have to
+            be closed for read-only operations. (Awaiting support in a future
+            release of FW)
+        allowMigration: controls whether a project in an old data format
+            will be migrated or not. (Use False for console applications
+            that don't provide a UI for the migration progress bar.)
+        verbose: controls logging/debug messages to the console.
         """
 
         try:
-            self.project = FLExLCM.OpenProject(projectName, writeEnabled)
+            self.project = FLExLCM.OpenProject(projectName, 
+                                               writeEnabled,
+                                               allowMigration)
             
         except System.IO.FileNotFoundException, e:
             raise FDA_FileNotFoundError(projectName)

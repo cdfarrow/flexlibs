@@ -64,7 +64,7 @@ def GetListOfProjects():
 
 #-----------------------------------------------------------
 
-def OpenProject(projectName, writeEnabled = False, allowMigration = True):
+def OpenProject(projectName, writeEnabled = False, allowMigration = False):
     """
     Open the project given by projectName:
         - Either the full path including ".fwdata" suffix, or

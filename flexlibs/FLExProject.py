@@ -981,6 +981,9 @@ class FLExProject (object):
     
     # --- Texts ---
 
+    def TextsNumberOfTexts(self):
+        return self.ObjectCountFor(ITextRepository)
+        
     def TextsGetAll(self, supplyName=True, supplyText=True):
         """
         A Generator that returns tuples of (Name, Text) where:

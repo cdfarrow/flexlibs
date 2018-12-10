@@ -70,10 +70,14 @@ def InitialiseFWGlobals():
     # # The environment variable FWVersion is configured by py_net.bat to 
     # # tell us which version of the FW DLLs we are running with 
     # # (so we know which path to use for FW libraries.)
-    try:
-        FWMajorVersion = os.environ["FWVersion"]
-    except KeyError:
-        raise Exception("Error: FWVersion environment variable not defined!")
+
+    # Migrating to package, we don't use py_net.bat
+    # TODO fix registry checking for package
+    FWMajorVersion = "9"
+    # try:
+    #     FWMajorVersion = os.environ["FWVersion"]
+    # except KeyError:
+    #     raise Exception("Error: FWVersion environment variable not defined!")
 
     # print "Startup: py_net.bat set FwVersion =", FWMajorVersion
     # rKey = GetFWRegKey(FWMajorVersion)
@@ -121,4 +125,3 @@ def InitialiseFWGlobals():
     FWLongVersion = vip.ApplicationVersion
     print "FLExGlobals: FWShortVersion =", FWShortVersion
     print "FLExGlobals: FWLongVersion =", FWLongVersion
-    

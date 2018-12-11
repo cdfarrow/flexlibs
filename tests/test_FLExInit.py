@@ -12,3 +12,7 @@ class TestFLExInit(TestCase):
             FLExInit.Cleanup()
         except:
             self.fail("Failed to Cleanup")
+
+
+if __name__ == "__main__":
+    unittest.main()

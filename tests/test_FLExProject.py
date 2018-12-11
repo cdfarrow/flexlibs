@@ -18,3 +18,7 @@ class TestFLExProject(TestCase):
 
     def test_OpenProject(self):
         pass
+
+
+if __name__ == "__main__":
+    unittest.main()

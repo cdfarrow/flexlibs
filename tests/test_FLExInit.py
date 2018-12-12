@@ -1,8 +1,8 @@
-from unittest import TestCase
+import unittest
 from flexlibs import FLExInit
 
 
-class TestFLExInit(TestCase):
+class TestFLExInit(unittest.TestCase):
     def test_InitializeCleanup(self):
         try:
             FLExInit.Initialize()

@@ -1,9 +1,9 @@
-from unittest import TestCase
+import unittest
 from flexlibs import FLExInit
 from flexlibs.FLExProject import FLExProject
 
 
-class TestFLExProject(TestCase):
+class TestFLExProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         FLExInit.Initialize()

@@ -1,5 +1,5 @@
 #
-#   FLExProject.py
+#   FLExDBAccess.py
 #
 #   Class: FLExProject
 #            Fieldworks Language Explorer project access functions 

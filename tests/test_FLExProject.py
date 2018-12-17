@@ -1,6 +1,6 @@
 import unittest
 from flexlibs import FLExInit
-from flexlibs.FLExProject import FLExProject
+from flexlibs.FLExDBAccess import FLExProject
 
 
 class TestFLExProject(unittest.TestCase):

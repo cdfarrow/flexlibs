@@ -23,8 +23,8 @@ import shutil
 import clr
 
 # Configure the path for accessing the FW DLLs
-import FLExGlobals     
-FLExGlobals.InitialiseFWGlobals() 
+import FLExGlobals
+FLExGlobals.InitialiseFWGlobals()
 
 clr.AddReference("FwUtils")
 from SIL.FieldWorks.Common.FwUtils import FwRegistryHelper, FwUtils
@@ -39,11 +39,10 @@ def Initialize ():
     # [FW9] These 3 inits copied from LCMBrowser::Main()
     FwRegistryHelper.Initialize()
     FwUtils.InitializeIcu()
-    # No need to access internet SLDR: Offline mode = True 
-    Sldr.Initialize(True)   
+    # No need to access internet SLDR: Offline mode = True
+    Sldr.Initialize(True)
 
 
 def Cleanup():
 
     Sldr.Cleanup();
-

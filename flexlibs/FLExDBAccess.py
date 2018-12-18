@@ -156,6 +156,12 @@ class FLExProject (object):
         except SIL.LCModel.LcmDataMigrationForbiddenException, e:
             raise FDA_MigrationRequired()
             
+        except SIL.LCModel.Utils.WorkerThreadException, e:
+            # TODO: This is here to cover over LT-19467 and ask the 
+            # user to open the project in FW to do the migration.
+            # This handling can be deleted once FW is fixed.
+            raise FDA_MigrationRequired()
+            
         except SIL.FieldWorks.Common.FwUtils.StartupException, e:
             # An unknown error -- pass on the full information
             raise FDA_ProjectError(e.Message)

@@ -17,6 +17,8 @@ from source (master branch).
 
 FieldWorks Language Explorer 9.0.4 beta or higher must be installed on the system.
 
+Python 2.7 requires the future package (``pip install future``)
+
 32-bit vs 64-bit FieldWorks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 32-bit FieldWorks requires the use of 32-bit Python.

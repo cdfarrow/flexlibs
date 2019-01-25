@@ -12,13 +12,18 @@
 #
 #   Copyright Craig Farrow, 2008 - 2018
 #
+from __future__ import print_function
+from __future__ import absolute_import
+
+from builtins import str
+from builtins import object
 
 import codecs
 import sys
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
 # Initialise low-level FLEx data access
-import FLExLCM
+from . import FLExLCM
 
 import clr
 clr.AddReference("System")
@@ -139,28 +144,28 @@ class FLExProject (object):
         try:
             self.project = FLExLCM.OpenProject(projectName, writeEnabled)
             
-        except System.IO.FileNotFoundException, e:
+        except System.IO.FileNotFoundException as e:
             raise FDA_FileNotFoundError(projectName)
             
-        except SIL.LCModel.LcmFileLockedException, e:
+        except SIL.LCModel.LcmFileLockedException as e:
             raise FDA_FileLockedError()
         
-        except SIL.LCModel.LcmDataMigrationForbiddenException, e:
+        except SIL.LCModel.LcmDataMigrationForbiddenException as e:
             raise FDA_MigrationRequired()
             
-        except SIL.FieldWorks.Common.FwUtils.StartupException, e:
+        except SIL.FieldWorks.Common.FwUtils.StartupException as e:
             # An unknown error -- pass on the full information
             raise FDA_ProjectError(e.Message)
 
 
         if self.project:
             if verbose:
-                print
-                print "\tFieldworks project:",  self.project.ProjectId.UiName
-                print 
+                print()
+                print("\tFieldworks project:",  self.project.ProjectId.UiName)
+                print() 
         else:
             msg = "OpenProject failed! Check project name: '%s'" % projectName
-            if verbose: print msg
+            if verbose: print(msg)
             raise FDA_ProjectError(msg)
 
 
@@ -287,7 +292,7 @@ class FLExProject (object):
         Returns None if the language tag is not found.
         """
 
-        if isinstance(languageTagOrHandle, (str, unicode)):
+        if isinstance(languageTagOrHandle, (str, str)):
             languageTagOrHandle = self.__NormaliseLangTag(languageTagOrHandle)
         
         try:
@@ -355,7 +360,7 @@ class FLExProject (object):
         """
         pos = self.lp.AllPartsOfSpeech
         
-        return map (lambda (x) : x.ToString(), pos)
+        return [x.ToString() for x in pos]
 
         
     def GetAllSemanticDomains(self, flat=False):
@@ -387,13 +392,13 @@ class FLExProject (object):
         """
 
         if isinstance(objectOrGuid, System.Guid):
-            guidString = unicode(objectOrGuid)
+            guidString = str(objectOrGuid)
             objRepository = self.project.ServiceLocator.GetInstance(ICmObjectRepository)
             object = objRepository.GetObject(objectOrGuid)
 
         else:
              try:
-                guidString = unicode(objectOrGuid.Guid)
+                guidString = str(objectOrGuid.Guid)
                 object = objectOrGuid
              except:
                 raise TypeError("objectOrGuid is neither System.Guid or an object with attribute Guid")
@@ -484,7 +489,7 @@ class FLExProject (object):
             handle = defaultWS
         else:
             #print "Specified ws =", languageTagOrHandle
-            if isinstance(languageTagOrHandle, (str, unicode)):
+            if isinstance(languageTagOrHandle, (str, str)):
                 handle = self.WSHandle(languageTagOrHandle)
             else:
                 handle = languageTagOrHandle
@@ -664,7 +669,7 @@ class FLExProject (object):
         """
         Returns the part of speech abbreviation for the sense.
         """
-        if sense.MorphoSyntaxAnalysisRA <> None:
+        if sense.MorphoSyntaxAnalysisRA != None:
             return sense.MorphoSyntaxAnalysisRA.InterlinearAbbr
         else:
             return ""
@@ -773,7 +778,7 @@ class FLExProject (object):
 
         value = self.GetCustomFieldValue(senseOrEntryOrHvo, fieldID)
 
-        if value and value.Text <> u"***":
+        if value and value.Text != u"***":
             return value.Text
         else:
             return u""
@@ -800,14 +805,14 @@ class FLExProject (object):
             hvo = senseOrEntryOrHvo
 
         mdc = self.project.MetaDataCacheAccessor
-        if mdc.GetFieldType(fieldID) <> CellarPropertyType.String:
+        if mdc.GetFieldType(fieldID) != CellarPropertyType.String:
             raise RuntimeError("LexiconSetFieldText: field is not String type")
 
         tss = TsStringUtils.MakeString(text, WSHandle)
 
         try:
             self.project.DomainDataByFlid.SetString(hvo, fieldID, tss)
-        except LcmInvalidFieldException, msg:
+        except LcmInvalidFieldException as msg:
             # This exception indicates that the project is not in write mode
             raise FDA_ReadOnlyError()
 
@@ -829,13 +834,13 @@ class FLExProject (object):
             hvo = senseOrEntryOrHvo
 
         mdc = self.project.MetaDataCacheAccessor
-        if mdc.GetFieldType(fieldID) <> CellarPropertyType.Integer:
+        if mdc.GetFieldType(fieldID) != CellarPropertyType.Integer:
             raise RuntimeError("LexiconSetFieldInteger: field is not Integer type")
 
-        if self.project.DomainDataByFlid.get_IntProp(hvo, fieldID) <> integer:
+        if self.project.DomainDataByFlid.get_IntProp(hvo, fieldID) != integer:
             try:
                 self.project.DomainDataByFlid.SetInt(hvo, fieldID, integer)
-            except LcmInvalidFieldException, msg:
+            except LcmInvalidFieldException as msg:
                 # This exception indicates that the project is not in write mode
                 raise FDA_ReadOnlyError()
 

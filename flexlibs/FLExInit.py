@@ -15,6 +15,8 @@
 #   Copyright Craig Farrow, 2011 - 2018
 #
 
+from __future__ import absolute_import
+
 import sys
 import os
 import glob
@@ -23,7 +25,7 @@ import shutil
 import clr
 
 # Configure the path for accessing the FW DLLs
-import FLExGlobals     
+from . import FLExGlobals
 FLExGlobals.InitialiseFWGlobals() 
 
 clr.AddReference("FwUtils")

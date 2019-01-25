@@ -12,6 +12,8 @@
 #
 #   Copyright Craig Farrow, 2008 - 2018
 #
+from __future__ import print_function
+from builtins import str
 
 import os
 
@@ -55,7 +57,7 @@ def GetListOfProjects():
     # TODO: Use FW Project Chooser (ChooseLangProjectDialog())
     #       and handle network drives
     projectsPath = FwDirectoryFinder.ProjectsDirectory
-    objs = os.listdir(unicode(projectsPath))
+    objs = os.listdir(str(projectsPath))
     projectList = []
     for f in objs:
         if os.path.isdir(os.path.join(projectsPath, f)):
@@ -79,7 +81,7 @@ def OpenProject(projectName, writeEnabled = False, allowMigration = True):
         
     projectFileName = LcmFileHelper.GetXmlDataFileName(projectName)
 
-    #print "FLExLCM.OpenProject:", projectFileName
+    # print "FLExLCM.OpenProject:", projectFileName
     
     projId = ProjectId(projectFileName)
     
@@ -99,7 +101,6 @@ def OpenProject(projectName, writeEnabled = False, allowMigration = True):
     #    ILcmDirectories dirs, 
     #    LcmSettings settings, 
     #    IThreadedProgress progressDlg)
-
     return LcmCache.CreateCacheFromExistingData(projId,
                                                 "en",
                                                 ui,

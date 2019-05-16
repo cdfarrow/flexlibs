@@ -92,18 +92,22 @@ class FDA_RuntimeError(Exception):
 class FDA_ReadOnlyError(FDA_RuntimeError):
     def __init__(self):
         FDA_RuntimeError.__init__(self,
-            "Module error: Trying to write to the project database without changes enabled.")
+            "Trying to write to the project database without changes enabled.")
             
 class FDA_WritingSystemError(FDA_RuntimeError):
     def __init__(self, writingSystemName):
         FDA_RuntimeError.__init__(self,
-            "Module error: Invalid Writing System for this project: %s" % writingSystemName)
+            "Invalid Writing System for this project: %s" % writingSystemName)
 
 class FDA_NullParameterError(FDA_RuntimeError):
     def __init__(self):
         FDA_RuntimeError.__init__(self,
-            "Module error: Null parameter.")
+            "Null parameter.")
 
+class FDA_ParameterError(FDA_RuntimeError):
+    def __init__(self, msg):
+        FDA_RuntimeError.__init__(self, msg)
+        
 #-----------------------------------------------------------
    
 class FLExProject (object):
@@ -141,7 +145,7 @@ class FLExProject (object):
             that don't provide a UI for the migration progress bar.)
         verbose: controls logging/debug messages to the console.
         """
-
+        
         try:
             self.project = FLExLCM.OpenProject(projectName, 
                                                writeEnabled,
@@ -410,7 +414,7 @@ class FLExProject (object):
                 guidString = unicode(objectOrGuid.Guid)
                 object = objectOrGuid
              except:
-                raise TypeError("objectOrGuid is neither System.Guid or an object with attribute Guid")
+                raise FDA_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
 
         if object.ClassID == ReversalIndexEntryTags.kClassId:
             tool = u"reversalToolEditComplete"
@@ -815,7 +819,7 @@ class FLExProject (object):
 
         mdc = self.project.MetaDataCacheAccessor
         if mdc.GetFieldType(fieldID) <> CellarPropertyType.String:
-            raise RuntimeError("LexiconSetFieldText: field is not String type")
+            raise FDA_ParameterError("LexiconSetFieldText: field is not String type")
 
         tss = TsStringUtils.MakeString(text, WSHandle)
 
@@ -844,7 +848,7 @@ class FLExProject (object):
 
         mdc = self.project.MetaDataCacheAccessor
         if mdc.GetFieldType(fieldID) <> CellarPropertyType.Integer:
-            raise RuntimeError("LexiconSetFieldInteger: field is not Integer type")
+            raise FDA_ParameterError("LexiconSetFieldInteger: field is not Integer type")
 
         if self.project.DomainDataByFlid.get_IntProp(hvo, fieldID) <> integer:
             try:

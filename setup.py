@@ -18,5 +18,13 @@ setup(
     author_email='flextoolshelp@gmail.com',
     url='https://github.com/cdfarrow/flexlibs',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    platforms=['Windows', 'Linux'],
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    packages=find_packages(exclude=('tests', 'docs')),
+    install_requires=[
+        'pythonnet>=2.0.0',
+        'future;python_version=="2.7"',
+        'sphinx'
+        ],
+    include_package_data=True
 )

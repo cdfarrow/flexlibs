@@ -36,38 +36,33 @@ FWREG_CODEDIR       = "RootCodeDir"
 FWREG_PROJECTSDIR   = "ProjectsDir"
 
 FWRegKeys = { 
-                "9" : {
-                      "default": r"SOFTWARE\SIL\Fieldworks\9",
-                      "wow64":   r"SOFTWARE\WOW6432Node\SIL\Fieldworks\9"
-                  },
+                "9" : r"SOFTWARE\SIL\Fieldworks\9",
             }
-
 
 
 # ----------------------------------------------------------------
 def GetFWRegKey():
     print("Python version: %s" % sys.version)
+
+    # Note: The registry looks up 32bit (via WOW3264Node) if we are 
+    # running 32 bit Python, so no need for special handling. 
+
     python32or64 = platform.architecture()[0]   # "32bit"/"64bit"
 
     for fwVersion in FW_SUPPORTED_VERSIONS:
         print("\nLooking for Fieldworks %s, %s...\n" \
                 % (fwVersion, python32or64))
 
-        for defaultOrWow in ["default", "wow64"]:
-            RegKey = FWRegKeys[fwVersion][defaultOrWow]
+        RegKey = FWRegKeys[fwVersion]
+        rKey = Registry.CurrentUser.OpenSubKey(RegKey)
+        print("GetFWRegKey: %s => %s" % (RegKey, rKey))
+        if rKey and rKey.GetValue(FWREG_CODEDIR):
+            return rKey
 
-            rKey = Registry.CurrentUser.OpenSubKey(RegKey)
-            print("GetFWRegKey: %s => %s" % (RegKey, rKey))
-            if rKey and rKey.GetValue(FWREG_CODEDIR):
-                return rKey
-
-            rKey = Registry.LocalMachine.OpenSubKey(RegKey)
-            print("GetFWRegKey: %s => %s" % (RegKey, rKey))
-            if rKey and rKey.GetValue(FWREG_CODEDIR):
-                return rKey
-
-            if python32or64 == "64bit":     # Only check WOW if 32 bit Python
-                break
+        rKey = Registry.LocalMachine.OpenSubKey(RegKey)
+        print("GetFWRegKey: %s => %s" % (RegKey, rKey))
+        if rKey and rKey.GetValue(FWREG_CODEDIR):
+            return rKey
 
     msg = "%s Fieldworks %s not found" \
             % (python32or64, " or ".join(FW_SUPPORTED_VERSIONS))

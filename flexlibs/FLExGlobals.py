@@ -9,7 +9,7 @@
 #   Platform: Python.NET & IRONPython
 #             FieldWorks Version 9
 #
-#   Copyright Craig Farrow, 2011 - 2018
+#   Copyright Craig Farrow, 2011 - 2019
 #
 from __future__ import print_function
 
@@ -25,54 +25,53 @@ import System
 clr.AddReference("System.Data")
 
 from System import Environment
-
-# FW9 TODO : change to using .NET registry API
-clr.AddReference("mscorlib")  # Where Win32 assembly resides
+from System.Reflection import Assembly
 from Microsoft.Win32 import Registry, RegistryKey
 
 # ----------------------------------------------------------------
 # Fieldworks registry constants
 
-FWRegKeys = { "9" : {
+FW_SUPPORTED_VERSIONS = ["9"]
+FWREG_CODEDIR       = "RootCodeDir"
+FWREG_PROJECTSDIR   = "ProjectsDir"
+
+FWRegKeys = { 
+                "9" : {
                       "default": r"SOFTWARE\SIL\Fieldworks\9",
-                      "wow64": r"SOFTWARE\WOW6432Node\SIL\Fieldworks\9"
-                  }
+                      "wow64":   r"SOFTWARE\WOW6432Node\SIL\Fieldworks\9"
+                  },
             }
 
-FWRegCodeDir = "RootCodeDir"
-FWRegProjectsDir = "ProjectsDir"
 
 
 # ----------------------------------------------------------------
-def GetFWRegKey(fwVersion):
-    bits = platform.architecture()[0]
-    print(fwVersion)
-    try:
-        RegKey = FWRegKeys[fwVersion]["default"]
-    except KeyError:
-        raise Exception("Error: Unsupported Fieldworks version (%s)" % fwVersion)
+def GetFWRegKey():
+    print("Python version: %s" % sys.version)
+    python32or64 = platform.architecture()[0]   # "32bit"/"64bit"
 
-    rKey = Registry.CurrentUser.OpenSubKey(RegKey)
-    print("GetFWRegKey: CurrentUser = ", rKey)
-    if rKey and rKey.GetValue(FWRegCodeDir):
-        return rKey
-    elif bits == "32bit":
-        rKey = Registry.CurrentUser.OpenSubKey(FWRegKeys[fwVersion]["wow64"])
-        print("GetFWRegKey: CurrentUser = ", rKey)
-        if rKey and rKey.GetValue(FWRegCodeDir):
-            return rKey
+    for fwVersion in FW_SUPPORTED_VERSIONS:
+        print("\nLooking for Fieldworks %s, %s...\n" \
+                % (fwVersion, python32or64))
 
-    rKey = Registry.LocalMachine.OpenSubKey(RegKey)
-    print("GetFWRegKey: LocalMachine = ", rKey)
-    if rKey and rKey.GetValue(FWRegCodeDir):
-        return rKey
-    elif bits == "32bit":
-        rKey = Registry.LocalMachine.OpenSubKey(FWRegKeys[fwVersion]["wow64"])
-        print("GetFWRegKey: LocalMachine = ", rKey)
-        if rKey and rKey.GetValue(FWRegCodeDir):
-            return rKey
+        for defaultOrWow in ["default", "wow64"]:
+            RegKey = FWRegKeys[fwVersion][defaultOrWow]
 
-    return None
+            rKey = Registry.CurrentUser.OpenSubKey(RegKey)
+            print("GetFWRegKey: %s => %s" % (RegKey, rKey))
+            if rKey and rKey.GetValue(FWREG_CODEDIR):
+                return rKey
+
+            rKey = Registry.LocalMachine.OpenSubKey(RegKey)
+            print("GetFWRegKey: %s => %s" % (RegKey, rKey))
+            if rKey and rKey.GetValue(FWREG_CODEDIR):
+                return rKey
+
+            if python32or64 == "64bit":     # Only check WOW if 32 bit Python
+                break
+
+    msg = "%s Fieldworks %s not found" \
+            % (python32or64, " or ".join(FW_SUPPORTED_VERSIONS))
+    raise Exception(msg)
 
 
 # -------------------------------------------------------------------
@@ -80,59 +79,30 @@ def GetFWRegKey(fwVersion):
 def InitialiseFWGlobals():
     global FWCodeDir
     global FWProjectsDir
-    global FWMajorVersion
     global FWShortVersion
     global FWLongVersion
 
-    # FW9 TODO -- 32bit exec doesn't find 64bit FW in registry
-    #               (it looks in WOW6432Node)
-    # # The environment variable FWVersion is configured by py_net.bat to 
-    # # tell us which version of the FW DLLs we are running with 
-    # # (so we know which path to use for FW libraries.)
+    rKey = GetFWRegKey()
 
-    # Migrating to package, we don't use py_net.bat
-    # TODO fix registry checking for package
-    FWMajorVersion = "9"
-    # try:
-    #     FWMajorVersion = os.environ["FWVersion"]
-    # except KeyError:
-    #     raise Exception("Error: FWVersion environment variable not defined!")
-
-    # print "Startup: py_net.bat set FwVersion =", FWMajorVersion
-    # rKey = GetFWRegKey(FWMajorVersion)
-    # if not rKey:
-    #     raise Exception("Can't find Fieldworks %s!" % FWMajorVersion)
-
-    # codeDir = rKey.GetValue(FWRegCodeDir)
-    # projectsDir = rKey.GetValue(FWRegProjectsDir)
-
-    # print "Startup: Reg codeDir =", codeDir
-    # print "Startup: Reg projectsDir =", projectsDir
-
-    # # On developer's machines we also check the build directories for FieldWorks.exe
-
-    # if not os.access(os.path.join(codeDir, "FieldWorks.exe"), os.F_OK):
-    #     if os.access(os.path.join(codeDir, r"..\Output\Release\FieldWorks.exe"), os.F_OK):
-    #         codeDir = os.path.join(codeDir, r"..\Output\Release")
-    #     elif os.access(os.path.join(codeDir, r"..\Output\Debug\FieldWorks.exe"), os.F_OK):
-    #         codeDir = os.path.join(codeDir, r"..\Output\Debug")
-    #     else:
-    #         raise Exception("Error: Can't find path for FieldWorks.exe.")
-
-    # FW9
-
-    rKey = GetFWRegKey(FWMajorVersion)
-    if not rKey:
-        raise Exception("Can't find Fieldworks %s!" % FWMajorVersion)
-
-    FWCodeDir = rKey.GetValue(FWRegCodeDir)
-    FWProjectsDir = rKey.GetValue(FWRegProjectsDir)
-
-    # FWCodeDir       = r"C:\Program Files\SIL\FieldWorks 9" #codeDir
-    # FWProjectsDir   = r"C:\ProgramData\SIL\FieldWorks\Projects" #projectsDir
+    FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+    FWProjectsDir = rKey.GetValue(FWREG_PROJECTSDIR)
 
     print("FLExGlobals: FWCodeDir =", FWCodeDir)
     print("FLExGlobals: FWProjectsDir =", FWProjectsDir)
+
+    # On developer's machines we also check the build directories 
+    # for FieldWorks.exe
+
+    if not os.access(os.path.join(FWCodeDir, "FieldWorks.exe"), os.F_OK):
+        if os.access(os.path.join(FWCodeDir, r"..\Output\Release\FieldWorks.exe"), os.F_OK):
+            FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Release")
+        elif os.access(os.path.join(FWCodeDir, r"..\Output\Debug\FieldWorks.exe"), os.F_OK):
+            FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Debug")
+        else:
+            # This can happen if there is a ghost registry entry for 
+            # an uninstalled FLEx
+            raise Exception("FieldWorks installation not found in {}" \
+                            .format(FWCodeDir))
 
     # Add the FW code directory to the search path for importing FW libs.
     sys.path.append(FWCodeDir)
@@ -143,7 +113,6 @@ def InitialiseFWGlobals():
     # These can't be imported until the path is set:
     clr.AddReference("FwUtils")
     from SIL.FieldWorks.Common.FwUtils import VersionInfoProvider
-    from System.Reflection import Assembly
 
     # Get the full version information out of FW itself
     vip = VersionInfoProvider(Assembly.GetAssembly(VersionInfoProvider), False)

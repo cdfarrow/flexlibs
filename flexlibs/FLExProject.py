@@ -23,6 +23,7 @@ import sys
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
 # Initialise low-level FLEx data access
+from . import FLExInit
 from . import FLExLCM
 
 import clr
@@ -118,8 +119,10 @@ class FDA_ParameterError(FDA_RuntimeError):
 class FLExProject (object):
     """
     Class for accessing a FieldWorks project. The methods here
-    hide the gory details of LCM.
-    For quick testing, self.project and self.lp can be used directly; 
+    hide some of the complexity of LCM.
+    For functionality that isn't provided here, LCM data and methods
+    can be used directly via FLExProject.project, FLExProject.lp and
+    FLExProject.lexDB; 
     However, for long term use new methods should be added to this class.
     """
     
@@ -148,7 +151,9 @@ class FLExProject (object):
         allowMigration: controls whether a project in an old data format
             will be migrated or not. (Use False for console applications
             that don't provide a UI for the migration progress bar.)
+
         verbose: controls logging/debug messages to the console.
+
         """
         
         try:
@@ -243,7 +248,7 @@ class FLExProject (object):
         
     # --- LCM Utilities ---
     
-    def UnpackNestedPossibilityList(self, possibilityList, flat):
+    def UnpackNestedPossibilityList(self, possibilityList, flat=False):
         """
         Returns a nested or flat list of a Fieldworks Possibility List.
         
@@ -545,8 +550,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(entry.LexemeFormOA.Form.get_String(WSHandle)).Text
-        if form == None: return u""
-        else: return form            
+        return form or u""
 
         
     def LexiconGetCitationForm(self, entry, languageTagOrHandle=None):
@@ -558,8 +562,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(entry.CitationForm.get_String(WSHandle)).Text
-        if form == None: return u""
-        else: return form
+        return form or u""
 
         
     def LexiconGetPublishInCount(self, entry):
@@ -578,25 +581,19 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(pronunciation.Form.get_String(WSHandle)).Text
-        if form == None: return u""
-        else: return form
+        return form or u""
 
         
     def LexiconGetExample(self, example, languageTagOrHandle=None):
         """
         Returns the example text in the Default Vernacular WS or
         other WS as specified by languageTagOrHandle.
-        Note: Analysis language translations of example sentences are
-        stored as a collection (list). E.g.: 
-            for translation in example.TranslationsOC:
-                print project.LexiconGetExampleTranslation(translation)
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
         
         # Example is a MultiString
         ex = ITsString(example.Example.get_String(WSHandle)).Text
-        if ex == None: return u""
-        else: return ex
+        return ex or u""
 
         
     def LexiconSetExample(self, example, newString, languageTagOrHandle=None):
@@ -625,13 +622,17 @@ class FLExProject (object):
         """
         Returns the translation of an example in the Default Analysis WS or
         other WS as specified by languageTagOrHandle.
+        Note: Analysis language translations of example sentences are
+        stored as a collection (list). E.g.: 
+
+            for translation in example.TranslationsOC:
+                print (project.LexiconGetExampleTranslation(translation))
         """
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
         # Translation is a MultiString
         tr = ITsString(translation.Translation.get_String(WSHandle)).Text
-        if tr == None: return u""
-        else: return tr
+        return tr or u""
 
     
     #  (Analysis WS fields)
@@ -645,8 +646,7 @@ class FLExProject (object):
         
         # MultiUnicodeAccessor
         gloss = ITsString(sense.Gloss.get_String(WSHandle)).Text
-        if gloss == None: return u""
-        else: return gloss
+        return gloss or u""
 
         
     def LexiconSetSenseGloss(self, sense, gloss, languageTagOrHandle=None):
@@ -678,8 +678,7 @@ class FLExProject (object):
         
         # Definition is a MultiString
         defn = ITsString(sense.Definition.get_String(WSHandle)).Text
-        if defn == None: return u""
-        else: return defn
+        return defn or u""
 
     #  (Non-string types)
     
@@ -789,7 +788,7 @@ class FLExProject (object):
         
     def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID):
         """
-        Return the text value for the given entry/sense and field (ID).
+        Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
         """
         if not senseOrEntryOrHvo: raise FDA_NullParameterError()
@@ -805,7 +804,7 @@ class FLExProject (object):
         
     def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, languageTagOrHandle=None):
         """
-        Set the text value for the given entry/sense and field (ID).
+        Set the text value for the given entry/sense and field ID.
         NOTE: writes the string in one writing system only (defaults
         to the default analysis WS.)
         Provided for use with custom fields.
@@ -838,7 +837,7 @@ class FLExProject (object):
 
     def LexiconSetFieldInteger(self, senseOrEntryOrHvo, fieldID, integer):
         """
-        Set the integer value for the given entry/sense and field (ID).
+        Set the integer value for the given entry/sense and field ID.
         Provided for use with custom fields.
         """
 
@@ -923,14 +922,14 @@ class FLExProject (object):
 
     def LexiconGetEntryCustomFieldNamed(self, fieldName):
         """
-        Return the entry-level field (its ID) given its name.
+        Return the entry-level field ID given its name.
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexEntryTags.kClassId, fieldName)
 
     def LexiconGetSenseCustomFieldNamed(self, fieldName):
         """
-        Return the sense-level field (its ID) given its name.
+        Return the sense-level field ID given its name.
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)
@@ -973,8 +972,7 @@ class FLExProject (object):
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
         form = ITsString(entry.ReversalForm.get_String(WSHandle)).Text
-        if form == None: return u""
-        else: return form
+        return form or u""
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """

@@ -64,8 +64,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/SphinxDocs/_build
-docs/FLExTools API/
+docs/flexlibsAPI/
 
 # PyBuilder
 target/

@@ -118,17 +118,28 @@ class FDA_ParameterError(FDA_RuntimeError):
    
 class FLExProject (object):
     """
-    Class for accessing a FieldWorks project. The methods here
-    hide some of the complexity of LCM.
+    This class provides convenience methods for accessing a FieldWorks 
+    project by hiding some of the complexity of LCM.
     For functionality that isn't provided here, LCM data and methods
     can be used directly via FLExProject.project, FLExProject.lp and
     FLExProject.lexDB; 
-    However, for long term use new methods should be added to this class.
+    However, for long term use, new methods should be added to this class.
+
+    Usage::
+
+        fp = FLExProject()
+        try:
+            fp.OpenProject("my project",
+                           writeEnabled = True/False)
+        except:
+            #"Failed to open project"
+            del fp
+
     """
     
     def GetProjectNames(self):
         """
-        Return a list of the FieldWorks projects available on this machine.
+        Return a list of FieldWorks projects that are in the default location.
         """
         
         return FLExLCM.GetListOfProjects()
@@ -139,16 +150,21 @@ class FLExProject (object):
                     allowMigration = False,
                     verbose = False):
         """
-        Open the project given by projectName:
+        Open a project.
+
+        projectName:
             - Either the full path including ".fwdata" suffix, or
-            - The name only, opened from the default project location.
+            - The name only, to open from the default project location.
             
-        writeEnabled: configures FW to accept database changes, and
+        writeEnabled: 
+            configures FW to accept database changes, and
             saves those when this object is deleted. It will also be used to
             open the FW project in read-only mode so that FW doesn't have to
             be closed for read-only operations. (Awaiting support in a future
             release of FW)
-        allowMigration: controls whether a project in an old data format
+
+        allowMigration: 
+            controls whether a project in an old data format
             will be migrated or not. (Use False for console applications
             that don't provide a UI for the migration progress bar.)
 
@@ -393,6 +409,7 @@ class FLExProject (object):
         in this project. The list is ordered.
         
         Return items are objects with properties/methods:
+
             - Hvo         - ID (value not the same across projects)
             - Guid        - Global Unique ID (same across all projects)
             - ToString()  - String representation of the semantic domain.
@@ -409,10 +426,11 @@ class FLExProject (object):
     def BuildGotoURL(self, objectOrGuid):
         """
         Builds a URL that can be used with os.startfile() to jump to the
-        object in Fieldworks. Currently supports:
-        - Lexical Entries
-        - Reversal Entries
-        - Wordforms
+        object in Fieldworks. This method currently supports:
+
+            - Lexical Entries
+            - Reversal Entries
+            - Wordforms
         """
 
         if isinstance(objectOrGuid, System.Guid):
@@ -470,9 +488,7 @@ class FLExProject (object):
             - ITextRepository
             - ILexEntryRepository
             
-        (All repository names can be viewed by opening a project in
-        LCMBrowser, which can be launched via the Help menu.)
-        
+        Open a project in LCMBrowser to identify other repository names.
         """
 
         repo = self.project.ServiceLocator.GetInstance(repository)
@@ -487,7 +503,8 @@ class FLExProject (object):
         """
         Returns an iterator over all entries in the lexicon.
         
-        Each entry is of type:
+        Each entry is of type::
+
           SIL.LCModel.ILexEntry, which contains:
               - HomographNumber :: integer
               - HomographForm :: string
@@ -622,8 +639,9 @@ class FLExProject (object):
         """
         Returns the translation of an example in the Default Analysis WS or
         other WS as specified by languageTagOrHandle.
-        Note: Analysis language translations of example sentences are
-        stored as a collection (list). E.g.: 
+
+        NOTE: Analysis language translations of example sentences are
+        stored as a collection (list). E.g.::
 
             for translation in example.TranslationsOC:
                 print (project.LexiconGetExampleTranslation(translation))
@@ -721,7 +739,8 @@ class FLExProject (object):
         # (int)ReflectionHelper.GetProperty(someILexEntry, "EntryAnalysesCount").
         """
         Returns a count of the occurences of the entry in the text corpus.
-        Note: as of Fieldworks 8.0.10 this calculation can be slightly off
+
+        NOTE: As of Fieldworks 8.0.10 this calculation can be slightly off
         (the same analysis in the same text segment is only counted once),
         but is the same as reported in Fieldworks in the Number of Analyses
         column. See LT-13997.
@@ -805,6 +824,7 @@ class FLExProject (object):
     def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, languageTagOrHandle=None):
         """
         Set the text value for the given entry/sense and field ID.
+
         NOTE: writes the string in one writing system only (defaults
         to the default analysis WS.)
         Provided for use with custom fields.
@@ -923,6 +943,7 @@ class FLExProject (object):
     def LexiconGetEntryCustomFieldNamed(self, fieldName):
         """
         Return the entry-level field ID given its name.
+
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexEntryTags.kClassId, fieldName)
@@ -930,6 +951,7 @@ class FLExProject (object):
     def LexiconGetSenseCustomFieldNamed(self, fieldName):
         """
         Return the sense-level field ID given its name.
+
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)

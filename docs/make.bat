@@ -1,2 +1,6 @@
-call sphinx-build -b html sphinx flexlibsAPI
-pause
+@pushd ..
+
+py setup.py build_sphinx
+
+@popd
+@pause

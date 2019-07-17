@@ -40,15 +40,11 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'flexlibs'
-copyright = u'2012-2019'
-
-# The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-#
-# The short X.Y version.
-version = '1.1.0'
+# --> These are defined in setup.cfg
+#project = u'flexlibs'
+#copyright = u'2012-2019'
+# The short X.Y version. (Not used)
+version = ''
 # The full version, including alpha/beta/rc tags.
 release = ''
 

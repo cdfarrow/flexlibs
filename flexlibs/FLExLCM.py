@@ -66,17 +66,16 @@ def GetListOfProjects():
 
 #-----------------------------------------------------------
 
-def OpenProject(projectName, writeEnabled = False, allowMigration = False):
+def OpenProject(projectName, writeEnabled = False):
     """
-    Open the project given by projectName:
+    Open a FieldWorks project.
+
+    projectName:
         - Either the full path including ".fwdata" suffix, or
         - The name only, opened from the default project location.
 
     writeEnabled : (Awaiting FW support for a read-only mode so that
                     FW doesn't have to be closed for read-only operations.)
-    allowMigration : Set this to True to prevent project migration;
-                     otherwise, a project in an old format will be
-                     automatically migrated to the lastest version.
     """
 
     projectFileName = LcmFileHelper.GetXmlDataFileName(projectName)
@@ -89,7 +88,8 @@ def OpenProject(projectName, writeEnabled = False, allowMigration = False):
     ui = FwLcmUI(None, th)     # IHelpTopicProvider, ISynchronizeInvoke
     dirs = FwDirectoryFinder.LcmDirectories
     settings = LcmSettings()
-    settings.DisableDataMigration = not allowMigration
+    # Migration should be done within FieldWorks
+    settings.DisableDataMigration = True    
 
     dlg = ProgressDialogWithTask(th)
 

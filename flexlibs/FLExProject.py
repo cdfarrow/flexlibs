@@ -55,10 +55,13 @@ from SIL.LCModel.Core.Text import TsStringUtils
 import SIL.FieldWorks.Common.FwUtils
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 #--- Exceptions ------------------------------------------------------
 
-class FDA_ProjectError(Exception):
+class FP_ProjectError(Exception):
     """Exception raised for any problems opening the project.
 
     Attributes:
@@ -68,24 +71,24 @@ class FDA_ProjectError(Exception):
     def __init__(self, message):
         self.message = message
 
-class FDA_FileNotFoundError(FDA_ProjectError):
+class FP_FileNotFoundError(FP_ProjectError):
     def __init__(self, projectName):
-        FDA_ProjectError.__init__(self,
+        FP_ProjectError.__init__(self,
             "Project file not found: %s" % projectName)
 
-class FDA_FileLockedError(FDA_ProjectError):
+class FP_FileLockedError(FP_ProjectError):
     def __init__(self):
-        FDA_ProjectError.__init__(self,
+        FP_ProjectError.__init__(self,
             "This project is in use by another program. Please close the other program and try again. See Fieldworks Help for more information.")
             
-class FDA_MigrationRequired(FDA_ProjectError):
+class FP_MigrationRequired(FP_ProjectError):
     def __init__(self):
-        FDA_ProjectError.__init__(self,
+        FP_ProjectError.__init__(self,
             "This project needs to be migrated to the latest format. Open the project in Fieldworks to do the migration.")
 
 #-----------------------------------------------------            
 
-class FDA_RuntimeError(Exception):
+class FP_RuntimeError(Exception):
     """Exception raised for any problems running the module.
 
     Attributes:
@@ -95,24 +98,24 @@ class FDA_RuntimeError(Exception):
     def __init__(self, message):
         self.message = message
 
-class FDA_ReadOnlyError(FDA_RuntimeError):
+class FP_ReadOnlyError(FP_RuntimeError):
     def __init__(self):
-        FDA_RuntimeError.__init__(self,
+        FP_RuntimeError.__init__(self,
             "Trying to write to the project database without changes enabled.")
             
-class FDA_WritingSystemError(FDA_RuntimeError):
+class FP_WritingSystemError(FP_RuntimeError):
     def __init__(self, writingSystemName):
-        FDA_RuntimeError.__init__(self,
+        FP_RuntimeError.__init__(self,
             "Invalid Writing System for this project: %s" % writingSystemName)
 
-class FDA_NullParameterError(FDA_RuntimeError):
+class FP_NullParameterError(FP_RuntimeError):
     def __init__(self):
-        FDA_RuntimeError.__init__(self,
+        FP_RuntimeError.__init__(self,
             "Null parameter.")
 
-class FDA_ParameterError(FDA_RuntimeError):
+class FP_ParameterError(FP_RuntimeError):
     def __init__(self, msg):
-        FDA_RuntimeError.__init__(self, msg)
+        FP_RuntimeError.__init__(self, msg)
         
 #-----------------------------------------------------------
    
@@ -145,10 +148,10 @@ class FLExProject (object):
         return FLExLCM.GetListOfProjects()
 
         
-    def OpenProject(self, projectName, 
+    def OpenProject(self, 
+                    projectName, 
                     writeEnabled = False, 
-                    allowMigration = False,
-                    verbose = False):
+                    logMessages = False):
         """
         Open a project.
 
@@ -163,50 +166,40 @@ class FLExProject (object):
             be closed for read-only operations. (Awaiting support in a future
             release of FW)
 
-        allowMigration: 
-            controls whether a project in an old data format
-            will be migrated or not. (Use False for console applications
-            that don't provide a UI for the migration progress bar.)
-
-        verbose: controls logging/debug messages to the console.
+        logMessages: controls logging to the global logger.
 
         """
         
         try:
             self.project = FLExLCM.OpenProject(projectName, 
-                                               writeEnabled,
-                                               allowMigration)
+                                               writeEnabled)
             
         except System.IO.FileNotFoundException as e:
-            raise FDA_FileNotFoundError(projectName)
+            raise FP_FileNotFoundError(projectName)
             
         except SIL.LCModel.LcmFileLockedException as e:
-            raise FDA_FileLockedError()
+            raise FP_FileLockedError()
         
-        except SIL.LCModel.LcmDataMigrationForbiddenException as e:
-            raise FDA_MigrationRequired()
-            
-        except SIL.LCModel.Utils.WorkerThreadException as e:
+        except (SIL.LCModel.LcmDataMigrationForbiddenException,           
+                SIL.LCModel.Utils.WorkerThreadException) as e:
             # Raised if the FW project needs to be migrated
             # to a later version. The user needs to open the project 
             # in FW to do the migration.
-            raise FDA_MigrationRequired()
+            raise FP_MigrationRequired()
             
         except SIL.FieldWorks.Common.FwUtils.StartupException as e:
-
             # An unknown error -- pass on the full information
-            raise FDA_ProjectError(e.Message)
+            raise FP_ProjectError(e.Message)
 
 
         if self.project:
-            if verbose:
-                print()
-                print("\tFieldworks project:",  self.project.ProjectId.UiName)
-                print() 
+            if logMessages:
+                logger.info("Fieldworks project: %s" %\
+                            self.project.ProjectId.UiName)
         else:
             msg = "OpenProject failed! Check project name: '%s'" % projectName
-            if verbose: print(msg)
-            raise FDA_ProjectError(msg)
+            if logMessages: logger.error(msg)
+            raise FP_ProjectError(msg)
 
 
         self.lp    = self.project.LangProject
@@ -224,7 +217,7 @@ class FLExProject (object):
                 # the project.
                 self.project.MainCacheAccessor.BeginNonUndoableTask()
             except System.InvalidOperationException:
-                raise FDA_ProjectError("BeginNonUndoableTask() failed.")
+                raise FP_ProjectError("BeginNonUndoableTask() failed.")
 
             
     def __del__(self):
@@ -257,7 +250,7 @@ class FLExProject (object):
         """
         Generic string extraction function returning the best Analysis or Vernacular string.
         """
-        if not stringObj: raise FDA_NullParameterError()
+        if not stringObj: raise FP_NullParameterError()
         
         s = ITsString(stringObj.BestAnalysisVernacularAlternative).Text
         return u"" if s == "***" else s
@@ -443,7 +436,7 @@ class FLExProject (object):
                 guidString = str(objectOrGuid.Guid)
                 object = objectOrGuid
              except:
-                raise FDA_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
+                raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
 
         if object.ClassID == ReversalIndexEntryTags.kClassId:
             tool = u"reversalToolEditComplete"
@@ -535,7 +528,7 @@ class FLExProject (object):
             else:
                 handle = languageTagOrHandle
         if not handle:
-            raise FDA_WritingSystemError(languageTagOrHandle)
+            raise FP_WritingSystemError(languageTagOrHandle)
         return handle
 
     def __WSHandleVernacular(self, languageTagOrHandle):
@@ -624,9 +617,9 @@ class FLExProject (object):
         have been present in the example string.
         """
 
-        if not self.writeEnabled: raise FDA_ReadOnlyError
+        if not self.writeEnabled: raise FP_ReadOnlyError
         
-        if not example: raise FDA_NullParameterError()
+        if not example: raise FP_NullParameterError()
 
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
@@ -675,9 +668,9 @@ class FLExProject (object):
             - languageTagOrHandle specifies a different writing system.
         """
 
-        if not self.writeEnabled: raise FDA_ReadOnlyError
+        if not self.writeEnabled: raise FP_ReadOnlyError
 
-        if not sense: raise FDA_NullParameterError()
+        if not sense: raise FP_NullParameterError()
         
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
@@ -768,8 +761,8 @@ class FLExProject (object):
         Returns None for other field types.
         """
 
-        if not senseOrEntryOrHvo: raise FDA_NullParameterError()
-        if not fieldID: raise FDA_NullParameterError()
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
 
         try:
             hvo = senseOrEntryOrHvo.Hvo
@@ -798,7 +791,7 @@ class FLExProject (object):
         Returns True if the given field is a string type suitable for use
         with LexiconAddTagToField(), otherwise returns False.
         """
-        if not fieldID: raise FDA_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
         
         mdc = self.project.MetaDataCacheAccessor
         cellarPropertyType = mdc.GetFieldType(fieldID)
@@ -810,8 +803,8 @@ class FLExProject (object):
         Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
         """
-        if not senseOrEntryOrHvo: raise FDA_NullParameterError()
-        if not fieldID: raise FDA_NullParameterError()
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
 
         value = self.GetCustomFieldValue(senseOrEntryOrHvo, fieldID)
 
@@ -830,10 +823,10 @@ class FLExProject (object):
         Provided for use with custom fields.
         """
 
-        if not self.writeEnabled: raise FDA_ReadOnlyError()
+        if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        if not senseOrEntryOrHvo: raise FDA_NullParameterError()
-        if not fieldID: raise FDA_NullParameterError()
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
         
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
 
@@ -844,7 +837,7 @@ class FLExProject (object):
 
         mdc = self.project.MetaDataCacheAccessor
         if mdc.GetFieldType(fieldID) != CellarPropertyType.String:
-            raise FDA_ParameterError("LexiconSetFieldText: field is not String type")
+            raise FP_ParameterError("LexiconSetFieldText: field is not String type")
 
         tss = TsStringUtils.MakeString(text, WSHandle)
 
@@ -852,7 +845,7 @@ class FLExProject (object):
             self.project.DomainDataByFlid.SetString(hvo, fieldID, tss)
         except LcmInvalidFieldException as msg:
             # This exception indicates that the project is not in write mode
-            raise FDA_ReadOnlyError()
+            raise FP_ReadOnlyError()
 
 
     def LexiconSetFieldInteger(self, senseOrEntryOrHvo, fieldID, integer):
@@ -861,10 +854,10 @@ class FLExProject (object):
         Provided for use with custom fields.
         """
 
-        if not self.writeEnabled: raise FDA_ReadOnlyError()
+        if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        if not senseOrEntryOrHvo: raise FDA_NullParameterError()
-        if not fieldID: raise FDA_NullParameterError()
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
         
         try:
             hvo = senseOrEntryOrHvo.Hvo
@@ -873,14 +866,14 @@ class FLExProject (object):
 
         mdc = self.project.MetaDataCacheAccessor
         if mdc.GetFieldType(fieldID) != CellarPropertyType.Integer:
-            raise FDA_ParameterError("LexiconSetFieldInteger: field is not Integer type")
+            raise FP_ParameterError("LexiconSetFieldInteger: field is not Integer type")
 
         if self.project.DomainDataByFlid.get_IntProp(hvo, fieldID) != integer:
             try:
                 self.project.DomainDataByFlid.SetInt(hvo, fieldID, integer)
             except LcmInvalidFieldException as msg:
                 # This exception indicates that the project is not in write mode
-                raise FDA_ReadOnlyError()
+                raise FP_ReadOnlyError()
 
 
     def LexiconAddTagToField(self, senseOrEntryOrHvo, fieldID, tag):
@@ -1004,9 +997,9 @@ class FLExProject (object):
             - languageTagOrHandle can be used to specify a different writing system.
         """
 
-        if not self.writeEnabled: raise FDA_ReadOnlyError
+        if not self.writeEnabled: raise FP_ReadOnlyError
         
-        if not entry: raise FDA_NullParameterError()
+        if not entry: raise FP_NullParameterError()
 
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         

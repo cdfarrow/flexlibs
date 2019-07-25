@@ -1,7 +1,10 @@
 import unittest
+
+import logging
+logging.basicConfig(filename='flexlibs.log', filemode='w', level=logging.DEBUG)
+
 from flexlibs import FLExInit
 from flexlibs.FLExProject import FLExProject
-
 
 class TestFLExProject(unittest.TestCase):
     @classmethod

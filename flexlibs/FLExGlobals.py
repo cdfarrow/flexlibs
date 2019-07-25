@@ -28,7 +28,6 @@ from System.Reflection import Assembly
 from Microsoft.Win32 import Registry, RegistryKey
 
 import logging
-logging.basicConfig(filename='flexlibs.log', filemode='w', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

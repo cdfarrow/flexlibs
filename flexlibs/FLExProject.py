@@ -55,10 +55,6 @@ from SIL.LCModel.Core.Text import TsStringUtils
 import SIL.FieldWorks.Common.FwUtils
 
 
-import logging
-logger = logging.getLogger(__name__)
-
-
 #--- Exceptions ------------------------------------------------------
 
 class FP_ProjectError(Exception):
@@ -150,8 +146,7 @@ class FLExProject (object):
         
     def OpenProject(self, 
                     projectName, 
-                    writeEnabled = False, 
-                    logMessages = False):
+                    writeEnabled = False):
         """
         Open a project.
 
@@ -165,8 +160,6 @@ class FLExProject (object):
             open the FW project in read-only mode so that FW doesn't have to
             be closed for read-only operations. (Awaiting support in a future
             release of FW)
-
-        logMessages: controls logging to the global logger.
 
         """
         
@@ -190,16 +183,6 @@ class FLExProject (object):
         except SIL.FieldWorks.Common.FwUtils.StartupException as e:
             # An unknown error -- pass on the full information
             raise FP_ProjectError(e.Message)
-
-
-        if self.project:
-            if logMessages:
-                logger.info("Fieldworks project: %s" %\
-                            self.project.ProjectId.UiName)
-        else:
-            msg = "OpenProject failed! Check project name: '%s'" % projectName
-            if logMessages: logger.error(msg)
-            raise FP_ProjectError(msg)
 
 
         self.lp    = self.project.LangProject

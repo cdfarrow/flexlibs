@@ -18,10 +18,6 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import object
 
-import codecs
-import sys
-sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
-
 # Initialise low-level FLEx data access
 from . import FLExInit
 from . import FLExLCM
@@ -75,12 +71,12 @@ class FP_FileNotFoundError(FP_ProjectError):
 class FP_FileLockedError(FP_ProjectError):
     def __init__(self):
         FP_ProjectError.__init__(self,
-            "This project is in use by another program. Please close the other program and try again. See Fieldworks Help for more information.")
+            "This project is in use by another program. Please close the other program and try again.")
             
 class FP_MigrationRequired(FP_ProjectError):
     def __init__(self):
         FP_ProjectError.__init__(self,
-            "This project needs to be migrated to the latest format. Open the project in Fieldworks to do the migration.")
+            "This project needs to be opened in FieldWorks in order for it to be migrated to the latest format.")
 
 #-----------------------------------------------------            
 
@@ -138,7 +134,7 @@ class FLExProject (object):
     
     def GetProjectNames(self):
         """
-        Return a list of FieldWorks projects that are in the default location.
+        Returns a list of FieldWorks projects that are in the default location.
         """
         
         return FLExLCM.GetListOfProjects()
@@ -202,6 +198,12 @@ class FLExProject (object):
             except System.InvalidOperationException:
                 raise FP_ProjectError("BeginNonUndoableTask() failed.")
 
+    def ProjectName(self):
+        """
+        Returns the display name of the current project.
+        """
+
+        return self.project.ProjectId.UiName
             
     def __del__(self):
         if hasattr(self, "project"):

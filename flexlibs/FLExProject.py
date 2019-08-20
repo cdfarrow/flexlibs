@@ -110,6 +110,14 @@ class FP_ParameterError(FP_RuntimeError):
         FP_RuntimeError.__init__(self, msg)
         
 #-----------------------------------------------------------
+def GetProjectNames():
+    """
+    Returns a list of FieldWorks projects that are in the default location.
+    """
+    
+    return FLExLCM.GetListOfProjects()
+
+#-----------------------------------------------------------
    
 class FLExProject (object):
     """
@@ -131,14 +139,6 @@ class FLExProject (object):
             del fp
 
     """
-    
-    def GetProjectNames(self):
-        """
-        Returns a list of FieldWorks projects that are in the default location.
-        """
-        
-        return FLExLCM.GetListOfProjects()
-
         
     def OpenProject(self, 
                     projectName, 

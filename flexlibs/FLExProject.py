@@ -130,6 +130,9 @@ class FLExProject (object):
 
     Usage::
 
+        from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
+        from SIL.LCModel.Core.Text import TsStringUtils 
+
         fp = FLExProject()
         try:
             fp.OpenProject("my project",
@@ -137,6 +140,19 @@ class FLExProject (object):
         except:
             #"Failed to open project"
             del fp
+
+        WSHandle = fp.WSHandle('en')
+
+        # Traverse the whole lexicon
+        for lexEntry in fp.LexiconAllEntries():
+            headword = fp.LexiconGetHeadword(lexEntry)
+
+            # Use get_String() and set_String() with text fields:
+            lexForm = lexEntry.LexemeFormOA                                            
+            lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
+            newValue = convert_headword(lexEntryValue)
+            mkstr = TsStringUtils.MakeString(newValue, WSHandle) 
+            lexForm.Form.set_String(WSHandle, mkstr)
 
     """
         
@@ -787,6 +803,11 @@ class FLExProject (object):
         """
         Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
+
+        (For normal fields use the object directly with get_String(). E.g.:
+            lexForm = lexEntry.LexemeFormOA                                            
+            lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text                    
+        )
         """
         if not senseOrEntryOrHvo: raise FP_NullParameterError()
         if not fieldID: raise FP_NullParameterError()
@@ -802,10 +823,16 @@ class FLExProject (object):
     def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, languageTagOrHandle=None):
         """
         Set the text value for the given entry/sense and field ID.
+        Provided for use with custom fields.
 
         NOTE: writes the string in one writing system only (defaults
         to the default analysis WS.)
-        Provided for use with custom fields.
+
+        (For normal fields use the object directly with set_String(). E.g.:
+            lexForm = lexEntry.LexemeFormOA                                            
+            mkstr = TsStringUtils.MakeString("text to write", WSHandle) 
+            lexForm.Form.set_String(WSHandle, mkstr)
+        )
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError()

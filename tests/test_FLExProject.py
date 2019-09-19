@@ -4,7 +4,7 @@ import logging
 logging.basicConfig(filename='flexlibs.log', filemode='w', level=logging.DEBUG)
 
 from flexlibs import FLExInit
-from flexlibs.FLExProject import FLExProject
+from flexlibs.FLExProject import FLExProject, GetProjectNames
 
 class TestFLExProject(unittest.TestCase):
     @classmethod
@@ -17,7 +17,7 @@ class TestFLExProject(unittest.TestCase):
         FLExInit.Cleanup()
 
     def test_GetProjectNames(self):
-        self.assertIsInstance(self.project.GetProjectNames(), list)
+        self.assertIsInstance(GetProjectNames(), list)
 
     def test_OpenProject(self):
         pass

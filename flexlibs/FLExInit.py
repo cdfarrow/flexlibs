@@ -22,6 +22,9 @@ import os
 import glob
 import shutil
 
+import logging
+logger = logging.getLogger(__name__)
+
 import clr
 
 # Configure the path for accessing the FW DLLs
@@ -37,12 +40,15 @@ from SIL.WritingSystems import Sldr
 # -------------------------------------------------------------------
 
 def Initialize ():
-
     # [FW9] These 3 inits copied from LCMBrowser::Main()
+    logger.debug("Calling RegistryHelper.Initialize()")
     FwRegistryHelper.Initialize()
+    logger.debug("Calling InitializeIcu()")
     FwUtils.InitializeIcu()
     # No need to access internet SLDR: Offline mode = True
+    logger.debug("Calling Sldr.Initialize()")
     Sldr.Initialize(True)
+    logger.debug("FLExInit.Initialize complete")
 
 
 def Cleanup():

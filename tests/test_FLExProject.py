@@ -20,7 +20,30 @@ class TestFLExProject(unittest.TestCase):
         self.assertIsInstance(GetProjectNames(), list)
 
     def test_OpenProject(self):
-        pass
+        fp = FLExProject()
+        projectName = GetProjectNames()[0]
+        try:
+            fp.OpenProject(projectName,
+                           writeEnabled = False)
+        except Exception as e:
+            del fp
+            self.fail("Exception opening project %s:\n%s" % 
+                        (projectName, e.message))
+
+    def test_ReadLexicon(self):
+        fp = FLExProject()
+        projectName = GetProjectNames()[0]
+        try:
+            fp.OpenProject(projectName,
+                           writeEnabled = False)
+        except Exception as e:
+            del fp
+            self.fail("Exception opening project %s" % projectName)
+
+        # Traverse the whole lexicon
+        for lexEntry in fp.LexiconAllEntries():
+            self.assertIsInstance(fp.LexiconGetHeadword(lexEntry), str)
+
 
 
 if __name__ == "__main__":

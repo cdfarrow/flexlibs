@@ -64,9 +64,15 @@ class FP_ProjectError(Exception):
         self.message = message
 
 class FP_FileNotFoundError(FP_ProjectError):
-    def __init__(self, projectName):
-        FP_ProjectError.__init__(self,
-            "Project file not found: %s" % projectName)
+    def __init__(self, projectName, e):
+        # Normally this will be a mispelled/wrong project name...
+        if projectName in str(e):
+            FP_ProjectError.__init__(self,
+                "Project file not found: %s" % projectName)
+        # ...however, it could be an internal FLEx error.
+        else:
+            FP_ProjectError.__init__(self,
+                "File not found error: %s" % e)
 
 class FP_FileLockedError(FP_ProjectError):
     def __init__(self):
@@ -180,7 +186,7 @@ class FLExProject (object):
                                                writeEnabled)
             
         except System.IO.FileNotFoundException as e:
-            raise FP_FileNotFoundError(projectName)
+            raise FP_FileNotFoundError(projectName, e)
             
         except SIL.LCModel.LcmFileLockedException as e:
             raise FP_FileLockedError()

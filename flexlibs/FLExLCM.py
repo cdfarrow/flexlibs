@@ -33,11 +33,6 @@ clr.AddReference("SIL.LCModel.Core")
 
 # Classes needed for loading the Cache
 from SIL.LCModel import LcmCache, LcmSettings, LcmFileHelper
-import Icu
-try:
-    from SIL.LCModel.Core.Text import CustomIcu     # FLEx 9.0.8+
-except:
-    from SIL.LCModel.Core.Text import Icu           # FLEx <= 9.0.7
 from SIL.LCModel.Core.Cellar import CellarPropertyType
 
 from SIL.FieldWorks import ProjectId

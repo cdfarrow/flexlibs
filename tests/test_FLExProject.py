@@ -1,3 +1,5 @@
+from builtins import str
+
 import unittest
 
 import logging

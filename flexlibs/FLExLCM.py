@@ -33,8 +33,9 @@ clr.AddReference("SIL.LCModel.Core")
 
 #workaround to redirect reference to vs 11 of dll
 #dll is from FLEx 9.0.7 
-fullpath = r"C:\Users\flexdev\Downloads\Newtonsoft.Json.dll"
-clr.AddReference(fullpath)
+dll_path = r"%s\Newtonsoft.Json.dll" % \
+    os.path.dirname(os.path.realpath(__file__))
+clr.AddReference(dll_path)
 
 # Classes needed for loading the Cache
 from SIL.LCModel import LcmCache, LcmSettings, LcmFileHelper

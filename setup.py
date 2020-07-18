@@ -26,12 +26,13 @@ setup(
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     packages=find_packages(exclude=('tests',)),
     data_files=[('', ['Newtonsoft.Json.dll'])],
+    package_data = {'': ['*.dll']},
     install_requires=[
         'pythonnet>=2.0.0',
         'future;python_version=="2.7"',
         'sphinx'
     ],
-    include_package_data=True,
+    #include_package_data=True,
     classifiers = [
         'Programming Language :: Python 2.7',
         'Programming Language :: Python 3.5',

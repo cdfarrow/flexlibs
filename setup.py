@@ -25,6 +25,7 @@ setup(
     platforms=['Windows', 'Linux'],
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     packages=find_packages(exclude=('tests',)),
+    data_files=[('', ['Newtonsoft.Json.dll'])],
     install_requires=[
         'pythonnet>=2.0.0',
         'future;python_version=="2.7"',

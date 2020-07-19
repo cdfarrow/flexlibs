@@ -24,8 +24,8 @@ setup(
     license=license,
     platforms=['Windows', 'Linux'],
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
-    packages=find_packages(exclude=('tests',)),
-    data_files=[('', ['Newtonsoft.Json.dll'])],
+    packages=find_packages(include=('flexlibs','flexlibs.*')),
+    #data_files=[('flexlibs', ['Newtonsoft.Json.dll'])],
     package_data = {'': ['*.dll']},
     install_requires=[
         'pythonnet>=2.0.0',

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 # --- Basic Library Information ------
 name = 'flexlibs'
-version = '1.0.2'
+version = '1.0.3'
 # ------------------------------------
 
 with open('README.rst') as f:

@@ -196,6 +196,9 @@ class FLExProject (object):
             # Raised if the FW project needs to be migrated
             # to a later version. The user needs to open the project 
             # in FW to do the migration.
+            # Jason Naylor [Dec2018] said not to do migration from an external
+            # program: "We think that is something a FieldWorks user should
+            # explicitly decide."
             raise FP_MigrationRequired()
             
         except SIL.FieldWorks.Common.FwUtils.StartupException as e:

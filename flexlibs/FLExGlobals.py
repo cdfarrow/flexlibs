@@ -39,8 +39,8 @@ FWProjectsDir = None
 FWShortVersion = None
 FWLongVersion = None
 
-APIHelpFile = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
-                            r"docs\flexlibsAPI\html\index.html")
+APIHelpFile = os.path.join(os.path.dirname(__file__), 
+                           r"..\docs\flexlibsAPI\html\index.html")
 
 # ----------------------------------------------------------------
 # FieldWorks registry constants

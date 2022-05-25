@@ -12,10 +12,8 @@
 #   Platform: Python.NET & IRONPython
 #             FieldWorks Version 9
 #
-#   Copyright Craig Farrow, 2011 - 2018
+#   Copyright Craig Farrow, 2011 - 2022
 #
-
-from __future__ import absolute_import
 
 import sys
 import os
@@ -24,6 +22,17 @@ import shutil
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+# Python version check:
+# (pythonnet 2.5 doesn't support beyond Python 3.8; pythonnet 3 is in 
+# Alpha -- May2022)
+PYTHON_MAX_VERSION = (3, 8)
+
+logger.info("Python version: %s" % sys.version)
+if sys.version_info[0:2] > PYTHON_MAX_VERSION:
+    raise Exception('Sorry, Python versions greater than %d.%d are not yet supported' % PYTHON_MAX_VERSION)
+
 
 import clr
 

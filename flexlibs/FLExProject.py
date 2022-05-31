@@ -813,10 +813,10 @@ class FLExProject (object):
         Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
 
-        (For normal fields use the object directly with get_String(). E.g.:
-            lexForm = lexEntry.LexemeFormOA                                            
-            lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text                    
-        )
+        For normal fields use the object directly with get_String(). E.g.::
+        
+            lexForm = lexEntry.LexemeFormOA
+            lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
         """
         if not senseOrEntryOrHvo: raise FP_NullParameterError()
         if not fieldID: raise FP_NullParameterError()
@@ -837,11 +837,11 @@ class FLExProject (object):
         NOTE: writes the string in one writing system only (defaults
         to the default analysis WS.)
 
-        (For normal fields use the object directly with set_String(). E.g.:
-            lexForm = lexEntry.LexemeFormOA                                            
+        For normal fields use the object directly with set_String(). E.g.::
+        
+            lexForm = lexEntry.LexemeFormOA
             mkstr = TsStringUtils.MakeString("text to write", WSHandle) 
             lexForm.Form.set_String(WSHandle, mkstr)
-        )
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError()

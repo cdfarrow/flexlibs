@@ -1,2 +1,2 @@
-include LICENSE.txt
 graft docs\flexlibsAPI\html
+graft flex-dlls

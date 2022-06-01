@@ -56,7 +56,6 @@ FWRegKeys = {
 
 # ----------------------------------------------------------------
 def GetFWRegKey():
-    logger.info("Python version: %s" % sys.version)
     logger.info(".NET version: %s" % Environment.Version)
 
     # Note: The registry looks up 32bit (via WOW3264Node) if we are 

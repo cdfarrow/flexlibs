@@ -1,6 +1,6 @@
 @pushd ..
 
-py setup.py build_sphinx
+sphinx-build -b html docs/sphinx flexlibs/docs/flexlibsAPI
 
 @popd
 @pause

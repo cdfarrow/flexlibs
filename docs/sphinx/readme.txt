@@ -7,5 +7,5 @@ The Sphinx configuration was created by:
        Editing flexlibs.rst to include only the FLExProject class
 
 The documentation is built with:
-    sphinx-build -b html sphinx flexlibsAPI
-   (This is what make.bat does)
+    sphinx-build -b html docs/sphinx flexlibs/docs/flexlibsAPI
+    (This is what make.bat does)

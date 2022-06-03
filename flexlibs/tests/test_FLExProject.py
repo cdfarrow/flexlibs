@@ -5,25 +5,25 @@ import unittest
 import logging
 logging.basicConfig(filename='flexlibs.log', filemode='w', level=logging.DEBUG)
 
-from flexlibs import FLExInit
-from flexlibs.FLExProject import FLExProject, GetProjectNames
+from flexlibs import FLExInitialize, FLExCleanup
+from flexlibs import FLExProject, AllProjectNames
 
 class TestFLExProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        FLExInit.Initialize()
+        FLExInitialize()
         cls.project = FLExProject()
 
     @classmethod
     def tearDownClass(cls):
-        FLExInit.Cleanup()
+        FLExCleanup()
 
-    def test_GetProjectNames(self):
-        self.assertIsInstance(GetProjectNames(), list)
+    def test_AllProjectNames(self):
+        self.assertIsInstance(AllProjectNames(), list)
 
     def test_OpenProject(self):
         fp = FLExProject()
-        projectName = GetProjectNames()[0]
+        projectName = AllProjectNames()[0]
         try:
             fp.OpenProject(projectName,
                            writeEnabled = False)
@@ -34,7 +34,7 @@ class TestFLExProject(unittest.TestCase):
 
     def test_ReadLexicon(self):
         fp = FLExProject()
-        projectName = GetProjectNames()[0]
+        projectName = AllProjectNames()[0]
         try:
             fp.OpenProject(projectName,
                            writeEnabled = False)

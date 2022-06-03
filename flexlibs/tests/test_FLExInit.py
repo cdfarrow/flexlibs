@@ -1,15 +1,15 @@
 import unittest
-from flexlibs import FLExInit
+from flexlibs import FLExInitialize, FLExCleanup
 
 
 class TestFLExInit(unittest.TestCase):
     def test_InitializeCleanup(self):
         try:
-            FLExInit.Initialize()
+            FLExInitialize()
         except:
             self.fail("Failed to initialize")
         try:
-            FLExInit.Cleanup()
+            FLExCleanup()
         except:
             self.fail("Failed to Cleanup")
 

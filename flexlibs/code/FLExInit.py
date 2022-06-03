@@ -7,7 +7,8 @@
 #           using any Fieldworks Assemblies as it sets up the
 #           path, and other low-level things.
 #
-#   Usage:  Call Initialize() and Cleanup() from the main application.
+#   Usage:  Call FLExInitialize() and FLExCleanup() as the first and 
+#           last actions from the main application.
 #
 #   Platform: Python.NET & IRONPython
 #             FieldWorks Version 9
@@ -63,7 +64,11 @@ from SIL.WritingSystems import Sldr
 
 # -------------------------------------------------------------------
 
-def Initialize ():
+def FLExInitialize ():
+    """
+    Initialize the Fieldworks libraries. An application should call
+    this as the first thing it does.
+    """
     # [FW9] These 3 inits copied from LCMBrowser::Main()
     logger.debug("Calling RegistryHelper.Initialize()")
     FwRegistryHelper.Initialize()
@@ -75,6 +80,9 @@ def Initialize ():
     logger.debug("FLExInit.Initialize complete")
 
 
-def Cleanup():
-
+def FLExCleanup():
+    """
+    Close up the Fieldworks libraries. An application should call this
+    before exiting.
+    """
     Sldr.Cleanup();

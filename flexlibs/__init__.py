@@ -8,8 +8,8 @@
 # Define exported classes, etc. at the top level of the package
 
 from .code.FLExInit import (
-    Initialize, 
-    Cleanup,
+    FLExInitialize, 
+    FLExCleanup,
     )
     
 from .code.FLExGlobals import (

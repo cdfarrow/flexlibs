@@ -116,7 +116,7 @@ class FP_ParameterError(FP_RuntimeError):
         FP_RuntimeError.__init__(self, msg)
         
 #-----------------------------------------------------------
-def GetProjectNames():
+def AllProjectNames():
     """
     Returns a list of FieldWorks projects that are in the default location.
     """

@@ -1,2 +1,2 @@
-graft docs\flexlibsAPI\html
-graft flex-dlls
+graft flexlibs\docs
+graft flexlibs\flex-dlls

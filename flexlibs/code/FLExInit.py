@@ -53,6 +53,7 @@ lib_path = os.path.join(os.path.dirname(__file__),
  
 for dll in glob.glob(lib_path):
     dll_path = os.path.abspath(dll)
+    logger.debug("".join(("Adding Reference to local dll: ", dll_path)))
     clr.AddReference(dll_path)
 
 

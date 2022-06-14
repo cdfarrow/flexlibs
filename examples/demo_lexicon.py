@@ -1,12 +1,12 @@
 # -*- coding: cp1252 -*-
 
-#   test_lexicon.py
+#   demo_lexicon.py
 #
 #   Tests and demonstrates working with the FieldWorks lexicon.
 #
 #   Platforms: Python .NET and IronPython
 #
-#   Copyright Craig Farrow, 2008 - 2018
+#   Copyright Craig Farrow, 2008 - 2022
 #
 
 from flexlibs import FLExInit

@@ -1,12 +1,12 @@
 # -*- coding: cp1252 -*-
 
-#   test_openproject.py
+#   demo_openproject.py
 #
 #   Tests and demonstrates access to a FieldWorks project.
 #
 #   Platforms: Python .NET and IronPython
 #
-#   Copyright Craig Farrow, 2008 - 2018
+#   Copyright Craig Farrow, 2008 - 2022
 #
 
 from flexlibs import FLExInit

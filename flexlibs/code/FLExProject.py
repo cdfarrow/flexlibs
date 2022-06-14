@@ -823,7 +823,8 @@ class FLExProject (object):
 
         value = self.GetCustomFieldValue(senseOrEntryOrHvo, fieldID)
 
-        if value and value.Text != u"***":
+        # (value.Text is None if the field is empty.)
+        if value and value.Text and value.Text != u"***":
             return value.Text
         else:
             return u""

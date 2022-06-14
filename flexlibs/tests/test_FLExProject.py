@@ -12,7 +12,6 @@ class TestFLExProject(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         FLExInitialize()
-        cls.project = FLExProject()
 
     @classmethod
     def tearDownClass(cls):

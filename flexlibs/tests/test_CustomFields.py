@@ -13,7 +13,7 @@ CUSTOM_VALUE = r"Test.Value"
 
 #----------------------------------------------------------- 
 
-class TestFLExProject(unittest.TestCase):
+class TestSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         FLExInitialize()

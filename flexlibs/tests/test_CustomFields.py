@@ -8,7 +8,7 @@ from flexlibs import FLExProject, AllProjectNames, FP_FileLockedError
 # --- Constants ---
 
 TEST_PROJECT = r"__flexlibs_testing"
-CUSTOM_FIELD = r"FTFlags"
+CUSTOM_FIELD = r"EntryFlags"
 CUSTOM_VALUE = r"Test.Value"
 
 #----------------------------------------------------------- 
@@ -40,6 +40,9 @@ class TestSuite(unittest.TestCase):
     def test_WriteFields(self):
         fp = self._openProject()
         flags_field = fp.LexiconGetEntryCustomFieldNamed(CUSTOM_FIELD)
+        if not flags_field:
+            self.fail("Entry-level custom field named '%s' not found." % CUSTOM_FIELD)
+            
         # Traverse the whole lexicon
         for lexEntry in fp.LexiconAllEntries():
             self.assertIsInstance(fp.LexiconGetHeadword(lexEntry), str)

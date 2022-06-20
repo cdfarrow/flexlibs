@@ -8,20 +8,19 @@ flexlibs handles the necessary initialisation of the FLEx engine, and
 provides a class (FLExProject) for opening a FLEx project and working 
 with its contents.
 
-`FLExTools <https://github.com/cdfarrow/flextools/wiki/>` is an 
-application for running Python scripts on FLEx databases. It is built 
-on flexlibs.
+For the GUI application that runs Python scripts/plugins
+on FLEx databases see FLExTools [2]_, which is built on flexlibs.
 
 
 Requirements
 ------------
 flexlibs supports Python 2.7, 3.5, 3.6, 3.7 and 3.8.
 
-Python for .NET [2]_ version 2.0.0 or greater.
+Python for .NET [3]_ version 2.0.0 or greater.
 
 FieldWorks Language Explorer 9.0.4 beta or higher.
 
-Python 2.7 requires the future package (``pip install future``)
+Python 2.7 requires the ``future`` package.
 
 32-bit vs 64-bit
 ^^^^^^^^^^^^^^^^
@@ -32,9 +31,10 @@ Fieldworks.
 Installation
 ------------
 Run:
-pip install git+https://github.com/cdfarrow/flexlibs
+``pip install flexlibs``
 
 --------------
 
 .. [1] https://software.sil.org/fieldworks/
-.. [2] https://github.com/pythonnet/pythonnet
+.. [2] https://github.com/cdfarrow/flextools/wiki/
+.. [3] https://github.com/pythonnet/pythonnet

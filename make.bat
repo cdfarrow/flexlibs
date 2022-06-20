@@ -34,10 +34,11 @@ FOR %%C IN ("Init"
     @REM Build the Sphinx docs
     sphinx-build docs/sphinx flexlibs/docs/flexlibsAPI
 
-    @REM Build the Wheel
+    @REM Build the wheel
     %PYTHON% -m build -w
     exit
     
 :DoPublish
-    echo Not implemented yet :-)
+    echo Publishing wheel to PyPI
+    %PYTHON% -m twine upload .\dist\flexlibs*
     exit

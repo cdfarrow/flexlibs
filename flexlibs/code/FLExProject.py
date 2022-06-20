@@ -173,7 +173,7 @@ class FLExProject (object):
             - The name only, to open from the default project location.
             
         writeEnabled: 
-            configures FW to accept database changes, and
+            configures FW to accept project changes, and
             saves those when this object is deleted. It will also be used to
             open the FW project in read-only mode so that FW doesn't have to
             be closed for read-only operations. (Awaiting support in a future

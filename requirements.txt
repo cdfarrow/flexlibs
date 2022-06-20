@@ -1,3 +1,5 @@
+build
 pythonnet >= 2.0.0
 future; python_version=="2.7"
 sphinx
+twine

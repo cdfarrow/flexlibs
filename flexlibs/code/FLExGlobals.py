@@ -7,9 +7,9 @@
 #           FieldWorks Assemblies.
 #
 #   Platform: Python.NET & IRONPython
-#             FieldWorks Version 9
+#             FieldWorks Version 9.0, 9.1
 #
-#   Copyright Craig Farrow, 2011 - 2019
+#   Copyright Craig Farrow, 2011 - 2022
 #
 
 import sys

@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import object
 
+import logging
+logger = logging.getLogger(__name__)
+
 # Initialise low-level FLEx data access
 from . import FLExInit
 from . import FLExLCM
@@ -166,7 +169,8 @@ class FLExProject (object):
                     projectName, 
                     writeEnabled = False):
         """
-        Open a project.
+        Open a project. The project must be closed with CloseProject() to 
+        save any changes, and release the lock.
 
         projectName:
             - Either the full path including ".fwdata" suffix, or
@@ -223,6 +227,35 @@ class FLExProject (object):
             except System.InvalidOperationException:
                 raise FP_ProjectError("BeginNonUndoableTask() failed.")
 
+    def CloseProject(self):
+        """
+        Save any pending changes and dispose of the LCM object.
+        """
+        # logger.debug("Closing FLExProject object...")
+        if hasattr(self, "project"):
+            if self.writeEnabled:
+                # logger.debug("Saving changes...")
+                # This must be called to mirror the call to BeginNonUndoableTask().
+                self.project.MainCacheAccessor.EndNonUndoableTask()
+                # Save all changes to disk. (EndNonUndoableTask)
+                usm = self.project.ServiceLocator.GetInstance(IUndoStackManager)
+                usm.Save()                
+                # logger.debug("Done")
+            try:
+                # logger.debug("Calling Dispose()...")
+                self.project.Dispose()
+                del self.project
+                # logger.debug("Deleted project object")
+                return
+            except:
+                # import traceback
+                # logger.debug("Exception in Dispose()")
+                # logger.debug("FLExProject.__del__:\n %s\n" % (traceback.format_exc()))
+                raise
+                pass
+            
+    # --- General ---
+
     def ProjectName(self):
         """
         Returns the display name of the current project.
@@ -230,30 +263,6 @@ class FLExProject (object):
 
         return self.project.ProjectId.UiName
             
-    def __del__(self):
-        if hasattr(self, "project"):
-            if self.writeEnabled:
-                # This must be called to mirror the call to BeginNonUndoableTask().
-                self.project.MainCacheAccessor.EndNonUndoableTask()
-                # Save all changes to disk. (EndNonUndoableTask)
-                usm = self.project.ServiceLocator.GetInstance(IUndoStackManager)
-                usm.Save()                
-            try:
-                #print "Calling self.project.Dispose()"
-                # TODO: This is failing with a COM error (memory disposal problem)
-                # with the Lela-Teli projects only.
-                self.project.Dispose()
-                del self.project
-                #print "FLExProject.__del__: success"
-                return
-            except:
-                #import traceback
-                #print "FLExProject.__del__:\n %s\n" % (traceback.format_exc())
-                raise
-                pass
-            #print "FLExProject.__del__: failed"
-
-
     # --- String Utilities ---
 
     def BestStr(self, stringObj):

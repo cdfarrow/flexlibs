@@ -25,6 +25,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+from .. import version
+logger.info("flexlibs version: %s" % version)
+
 # Python version check:
 # (pythonnet 2.5 doesn't support beyond Python 3.8; pythonnet 3 is in 
 # Alpha -- May2022)

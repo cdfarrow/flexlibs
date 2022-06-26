@@ -92,7 +92,7 @@ if __name__ == "__main__":
     reportBasicInfo(project)
     
     # Clean-up
-    del project
+    project.CloseProject()
     
     FLExCleanup()
     

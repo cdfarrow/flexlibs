@@ -99,7 +99,7 @@ if __name__ == "__main__":
     reportLexicalEntries(project)
     
     # Clean-up
-    del project
+    project.CloseProject()
     
     FLExCleanup()
     

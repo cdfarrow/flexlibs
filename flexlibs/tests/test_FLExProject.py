@@ -22,14 +22,15 @@ class TestFLExProject(unittest.TestCase):
 
     def test_OpenProject(self):
         fp = FLExProject()
+        # Grab the first project in the list
         projectName = AllProjectNames()[0]
         try:
             fp.OpenProject(projectName,
                            writeEnabled = False)
         except Exception as e:
-            del fp
             self.fail("Exception opening project %s:\n%s" % 
                         (projectName, e.message))
+        fp.CloseProject()
 
     def test_ReadLexicon(self):
         fp = FLExProject()
@@ -38,12 +39,13 @@ class TestFLExProject(unittest.TestCase):
             fp.OpenProject(projectName,
                            writeEnabled = False)
         except Exception as e:
-            del fp
             self.fail("Exception opening project %s" % projectName)
 
         # Traverse the whole lexicon
         for lexEntry in fp.LexiconAllEntries():
             self.assertIsInstance(fp.LexiconGetHeadword(lexEntry), str)
+
+        fp.CloseProject()
 
 
 

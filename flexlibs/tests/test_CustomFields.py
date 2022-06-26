@@ -28,14 +28,15 @@ class TestSuite(unittest.TestCase):
             fp.OpenProject(TEST_PROJECT,
                            writeEnabled = True)
         except FP_FileLockedError:
-            del fp
             self.fail("The test project is open in another application. Please close it and try again.")
 
         except Exception as e:
-            del fp
             self.fail("Exception opening project %s:\n%s" % 
                       (TEST_PROJECT, e.message))
         return fp
+
+    def _closeProject(self, fp):
+        fp.CloseProject()
 
     def test_WriteFields(self):
         fp = self._openProject()
@@ -61,6 +62,7 @@ class TestSuite(unittest.TestCase):
         for lexEntry in fp.LexiconAllEntries():
             fp.LexiconSetFieldText(lexEntry, flags_field, "")
                 
+        self._closeProject(fp)
     
 if __name__ == "__main__":
     unittest.main()

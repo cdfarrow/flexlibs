@@ -27,6 +27,7 @@ FOR %%C IN ("Init"
     
 :DoRunTests
     %PYTHON% -m pytest
+    exit
 
 :DoClean
     rmdir /s /q ".\build"

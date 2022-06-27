@@ -16,6 +16,7 @@ FOR %%C IN ("Init"
 :Usage
     echo Usage:
     echo      make init
+    echo      make runtests
     echo      make clean
     echo      make build
     echo      make publish

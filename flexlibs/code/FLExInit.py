@@ -20,6 +20,7 @@ import sys
 import os
 import glob
 import shutil
+import platform
 
 import logging
 logger = logging.getLogger(__name__)
@@ -77,6 +78,16 @@ def FLExInitialize ():
     logger.debug("Calling RegistryHelper.Initialize()")
     FwRegistryHelper.Initialize()
     logger.debug("Calling InitializeIcu()")
+    if platform.system() == "Linux":
+        from Icu import Wrapper #, VersionInfo
+        # The Flex beta on Linux currently ships with a version of ICU
+        # that has a minor version (54.1), but Icu.Net can only handle finding
+        # a version of ICU that can be parsed as an integer. The beta
+        # also ships with the version 54 libraries, but Icu.Net can't
+        # find it because it finds 54.1 first and then fails.
+        # I'm not sure what exactly FieldWorks does to address this, 
+        # but limiting the version here works.
+        Wrapper.ConfineIcuVersions(54,54)
     FwUtils.InitializeIcu()
     # No need to access internet SLDR: Offline mode = True
     logger.debug("Calling Sldr.Initialize()")

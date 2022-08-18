@@ -98,7 +98,23 @@ def InitialiseFWGlobals():
         logging.exception("Couldn't find FieldWorks registry entry")
         raise
 
-    FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+    if platform.system() == "Linux":
+        # On Linux, for installed versions of Flex,
+        # FWREG_CODEDIR points to /usr/share/fieldworks,
+        # but FieldWorks.exe resides in /usr/lib/fieldworks.
+        # I can't find any registry keys/values that point to
+        # the correct location.
+        # For installed version, the app calls /bin/fieldworks-flex
+        # from /usr/share/applications/fieldworks-applicatoins.desktop,
+        # which in turn calls /usr/lib/fieldworks/run-app FieldWorks.exe etc.
+        #
+        # I'm not sure what to do with developer versions on Linux.
+        FWCodeDir = "/usr/lib/fieldworks"
+    else:
+        # On windows, FWREG_CODEDIR is correct.
+        FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+
+    # FWREG_PROJECTSDIR is correct on Windows and Linux.
     FWProjectsDir = rKey.GetValue(FWREG_PROJECTSDIR)
 
     # On developer's machines we also check the build directories 

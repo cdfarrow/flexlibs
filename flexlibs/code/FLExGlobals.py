@@ -108,8 +108,9 @@ def InitialiseFWGlobals():
         # from /usr/share/applications/fieldworks-applicatoins.desktop,
         # which in turn calls /usr/lib/fieldworks/run-app FieldWorks.exe etc.
         #
-        # I'm not sure what to do with developer versions on Linux.
-        FWCodeDir = "/usr/lib/fieldworks"
+        # The following is based on the logic nin /usr/lib/fieldworks/environ
+        # I'm not sure what to do with developer versions on Linux, but see below.
+        FWCodeDir = os.path.join(rKey.GetValue(FWREG_CODEDIR), "../../lib/fieldworks")
     else:
         # On windows, FWREG_CODEDIR is correct.
         FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
@@ -125,6 +126,9 @@ def InitialiseFWGlobals():
             FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Release")
         elif os.access(os.path.join(FWCodeDir, r"..\Output\Debug\FieldWorks.exe"), os.F_OK):
             FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Debug")
+        # Does this work for Linux developers? It seems it should according to environ script
+        elif os.access(os.path.join(rKey.GetValue(FWREG_CODEDIR), r"../FieldWorks.exe"), os.F_OK):
+            FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
         else:
             # This can happen if there is a ghost registry entry for 
             # an uninstalled FLEx

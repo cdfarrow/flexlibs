@@ -80,7 +80,7 @@ class FP_FileNotFoundError(FP_ProjectError):
 class FP_FileLockedError(FP_ProjectError):
     def __init__(self):
         FP_ProjectError.__init__(self,
-            "This project is in use by another program. Please close the other program and try again.")
+            "This project is in use by another program. To allow shared access to this project, turn on the sharing option in the Sharing tab of the Fieldworks Project Properties dialog.")
             
 class FP_MigrationRequired(FP_ProjectError):
     def __init__(self):
@@ -177,11 +177,19 @@ class FLExProject (object):
             - The name only, to open from the default project location.
             
         writeEnabled: 
-            configures FW to accept project changes, and
-            saves those when this object is deleted. It will also be used to
-            open the FW project in read-only mode so that FW doesn't have to
-            be closed for read-only operations. (Awaiting support in a future
-            release of FW)
+            Enables changes to be written to the project, which will be
+            saved on a call to CloseProject(). 
+            LCM will raise an exception if changes are attempted without 
+            opening the project in this mode.
+            
+        Note: 
+            A call to OpenProject() may fail with a FP_FileLockedError
+            exception if the project is open in Fieldworks (or another 
+            application).
+            To avoid this, prpject sharing can be enabled within the 
+            Fieldworks Project Properties dialog. In the Sharing tab,
+            turn on the option "Share project contents with programs 
+            on this computer".
 
         """
         

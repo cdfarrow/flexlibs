@@ -5,7 +5,7 @@
 #
 #----------------------------------------------------------------------------
 
-version = "1.1.3"
+version = "1.1.4"
 
 # Define exported classes, etc. at the top level of the package
 

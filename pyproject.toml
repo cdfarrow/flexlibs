@@ -1,7 +1,5 @@
 [build-system]
 requires = [
     "setuptools>=43.0.0",
-    "pythonnet >= 2.0.0", 
-    "sphinx"
     ]
 build-backend = "setuptools.build_meta"

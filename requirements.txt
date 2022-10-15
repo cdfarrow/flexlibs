@@ -1,5 +1,7 @@
-build
-pythonnet >= 2.0.0
-future; python_version=="2.7"
+# Libraries required for building and publishing flexlibs.
+# pythonnet is needed because the sphinx builder imports FLExProject.py
+pytest
 sphinx
+pythonnet >= 2.5.0, <3
+build
 twine

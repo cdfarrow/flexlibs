@@ -186,7 +186,7 @@ class FLExProject (object):
             A call to OpenProject() may fail with a FP_FileLockedError
             exception if the project is open in Fieldworks (or another 
             application).
-            To avoid this, prpject sharing can be enabled within the 
+            To avoid this, project sharing can be enabled within the 
             Fieldworks Project Properties dialog. In the Sharing tab,
             turn on the option "Share project contents with programs 
             on this computer".

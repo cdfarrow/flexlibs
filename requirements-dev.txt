@@ -1,4 +1,0 @@
-pytest
-build
-twine
-sphinx

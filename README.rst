@@ -14,13 +14,12 @@ on FLEx databases see FLExTools [2]_, which is built on flexlibs.
 
 Requirements
 ------------
-flexlibs supports Python 2.7, 3.5, 3.6, 3.7 and 3.8.
+flexlibs supports Python 3.5, 3.6, 3.7 and 3.8.
 
 Python for .NET [3]_ version 2.0.0 or greater.
 
 FieldWorks Language Explorer 9.0.4 beta or higher.
 
-Python 2.7 requires the ``future`` package.
 
 32-bit vs 64-bit
 ^^^^^^^^^^^^^^^^

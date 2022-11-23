@@ -10,10 +10,8 @@
 #             (ITsString doesn't work in IRONPython)
 #             FieldWorks Version 9
 #
-#   Copyright Craig Farrow, 2008 - 2019
+#   Copyright Craig Farrow, 2008 - 2022
 #
-from __future__ import print_function
-from __future__ import absolute_import
 
 from builtins import str
 from builtins import object

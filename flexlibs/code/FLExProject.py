@@ -35,6 +35,7 @@ from SIL.LCModel import (
                             WfiGlossTags,
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
+    TextTags,
     ITextRepository,
     ISegmentRepository,
     IReversalIndex, IReversalIndexEntry, ReversalIndexEntryTags,
@@ -49,7 +50,10 @@ from SIL.LCModel import (
 from SIL.LCModel.Core.Cellar import CellarPropertyType
 from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
 from SIL.LCModel.Core.Text import TsStringUtils
-import SIL.FieldWorks.Common.FwUtils
+from SIL.FieldWorks.Common.FwUtils import (
+    StartupException,
+    FwAppArgs,
+    )
 
 
 #--- Exceptions ------------------------------------------------------
@@ -211,7 +215,7 @@ class FLExProject (object):
             # explicitly decide."
             raise FP_MigrationRequired()
             
-        except SIL.FieldWorks.Common.FwUtils.StartupException as e:
+        except StartupException as e:
             # An unknown error -- pass on the full information
             raise FP_ProjectError(e.Message)
 
@@ -449,36 +453,41 @@ class FLExProject (object):
             - Lexical Entries
             - Reversal Entries
             - Wordforms
+            - Texts
         """
 
         if isinstance(objectOrGuid, System.Guid):
-            guidString = str(objectOrGuid)
             objRepository = self.project.ServiceLocator.GetInstance(ICmObjectRepository)
-            object = objRepository.GetObject(objectOrGuid)
-
+            flexObject = objRepository.GetObject(objectOrGuid)
         else:
-             try:
-                guidString = str(objectOrGuid.Guid)
-                object = objectOrGuid
-             except:
-                raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
+            flexObject = objectOrGuid
+            
+        # Quick sanity check that we have the right thing
+        try:
+            flexObject.Guid
+        except:
+            raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
 
-        if object.ClassID == ReversalIndexEntryTags.kClassId:
+        if flexObject.ClassID == ReversalIndexEntryTags.kClassId:
             tool = u"reversalToolEditComplete"
 
-        elif object.ClassID in (WfiWordformTags.kClassId,
+        elif flexObject.ClassID in (WfiWordformTags.kClassId,
                                 WfiAnalysisTags.kClassId,
                                 WfiGlossTags.kClassId):
             tool = u"Analyses"
-
+            
+        elif flexObject.ClassID == TextTags.kClassId:
+            tool = u"interlinearEdit"
+            
         else:
             tool = u"lexiconEdit"                # Default tool is Lexicon Edit
 
-        return r"%26".join([r"silfw://localhost/link?app%3dflex",
-                            r"database%3d" + self.project.ProjectId.UiName.replace(" ", "+"),
-                            r"tool%3d" + tool,
-                            r"guid%3d" + guidString,])
+        # Build the URL
+        linkObj = FwAppArgs(self.project.ProjectId.Handle,
+                            tool,
+                            flexObject.Guid)
 
+        return str(linkObj)
 
     # --- Generic Repository Access ---
 

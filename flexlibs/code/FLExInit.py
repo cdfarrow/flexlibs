@@ -48,8 +48,8 @@ FLExGlobals.InitialiseFWGlobals()
 # This is a workaround to redirect the dll loading to old versions of 
 # dlls that are still needed by some FLEx libraries. FLEx handles it via 
 # a redirect in its .config file, but we don't have one of those with 
-# FLExTools. If/when it comes up again, simply drop the *old* dll into 
-# the lib\ folder.
+# FLExTools. When FLEx updates the dlls again, simply drop the *old* dll 
+# into the flex-dlls\ folder.
 
 lib_path = os.path.join(os.path.dirname(__file__), 
                         r"..\flex-dlls\*.dll")
@@ -78,9 +78,11 @@ def FLExInitialize ():
     FwRegistryHelper.Initialize()
     logger.debug("Calling InitializeIcu()")
     FwUtils.InitializeIcu()
-    # No need to access internet SLDR: Offline mode = True
+    # No need to access the online SLDR: Offline mode = True
     logger.debug("Calling Sldr.Initialize()")
     Sldr.Initialize(True)
+    # Sldr.Initialize() can fail silently. If it doesn't return, 
+    # then it is likely a dll issue.
     logger.debug("FLExInit.Initialize complete")
 
 

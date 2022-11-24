@@ -7,6 +7,11 @@
 
 ## History
 
+### 1.1.6 - 24 Nov 2022
+
++ Added the DLLs needed to support FieldWorks 9.1.15/16
++ Added support for Texts to BuildGotoURL()
+
 ### 1.1.5 - 15 Oct 2022
 
 + Constrained pythonnet to < 3 since flexlibs breaks with the new v3.0.0 

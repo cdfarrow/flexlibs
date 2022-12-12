@@ -43,13 +43,15 @@ from SIL.LCModel import (
     SpecialWritingSystemCodes,
     IMultiStringAccessor,
     LcmInvalidFieldException,
+    LcmFileLockedException,
+    LcmDataMigrationForbiddenException,
     IUndoStackManager,
     )
-
 
 from SIL.LCModel.Core.Cellar import CellarPropertyType
 from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
 from SIL.LCModel.Core.Text import TsStringUtils
+from SIL.LCModel.Utils import WorkerThreadException
 from SIL.FieldWorks.Common.FwUtils import (
     StartupException,
     FwAppArgs,
@@ -202,11 +204,11 @@ class FLExProject (object):
         except System.IO.FileNotFoundException as e:
             raise FP_FileNotFoundError(projectName, e)
             
-        except SIL.LCModel.LcmFileLockedException as e:
+        except LcmFileLockedException as e:
             raise FP_FileLockedError()
         
-        except (SIL.LCModel.LcmDataMigrationForbiddenException,           
-                SIL.LCModel.Utils.WorkerThreadException) as e:
+        except (LcmDataMigrationForbiddenException,           
+                WorkerThreadException) as e:
             # Raised if the FW project needs to be migrated
             # to a later version. The user needs to open the project 
             # in FW to do the migration.

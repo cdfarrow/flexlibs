@@ -45,9 +45,9 @@ from SIL.FieldWorks.FwCoreDlgs import ChooseLangProjectDialog
 
 #--- Globals --------------------------------------------------------
 
-CellarStringTypes  = (CellarPropertyType.String, )
-CellarUnicodeTypes = (CellarPropertyType.MultiUnicode,
-                      CellarPropertyType.MultiString)
+CellarStringTypes      = (CellarPropertyType.String, )
+CellarMultiStringTypes = (CellarPropertyType.MultiUnicode,
+                          CellarPropertyType.MultiString)
 
 #-----------------------------------------------------------
 

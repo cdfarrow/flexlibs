@@ -951,7 +951,7 @@ class FLExProject (object):
         
         if fieldType in FLExLCM.CellarStringTypes:
             try:
-                self.project.DomainDataByFlid.SetString(hvo, fieldID, "")
+                self.project.DomainDataByFlid.SetString(hvo, fieldID, None)
             except LcmInvalidFieldException as msg:
                 # This exception indicates that the project is not in write mode
                 raise FP_ReadOnlyError()

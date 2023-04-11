@@ -1,11 +1,10 @@
 #----------------------------------------------------------------------------
-# Name:         __init__.py
-# Purpose:      flexlibs provides a Python interface to FLEx project data 
+# Name:         flexlibs
+# Purpose:      This package provides a Python interface to FLEx project data 
 #               via the Fieldworks Language and Culture Model (LCM).
-#
 #----------------------------------------------------------------------------
 
-version = "1.1.7"
+version = "1.1.8"
 
 # Define exported classes, etc. at the top level of the package
 

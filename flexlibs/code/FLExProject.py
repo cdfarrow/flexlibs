@@ -791,10 +791,16 @@ class FLExProject (object):
 
     # --- Lexicon: field functions ---
 
-    def GetCustomFieldValue(self, senseOrEntryOrHvo, fieldID):
+    def GetCustomFieldValue(self, senseOrEntryOrHvo, fieldID,
+                            languageTagOrHandle=None):
         """
         Returns the field value for String, MultiString and Integer fields.
         Returns None for other field types.
+        languageTagOrHandle only applies to MultiStrings; if None the
+        best Analysis or Venacular string is returned. 
+        
+        Note: if the field is a vernacular WS field, then the 
+        languageTagOrHandle must be specified.
         """
 
         if not senseOrEntryOrHvo: raise FP_NullParameterError()
@@ -812,9 +818,14 @@ class FLExProject (object):
         if cellarPropertyType in FLExLCM.CellarStringTypes:
             return ITsString(self.project.DomainDataByFlid.\
                              get_StringProp(hvo, fieldID))
-        elif cellarPropertyType in FLExLCM.CellarUnicodeTypes:
+                             
+        elif cellarPropertyType in FLExLCM.CellarMultiStringTypes:
             mua = self.project.DomainDataByFlid.get_MultiStringProp(hvo, fieldID)
-            return ITsString(mua.BestAnalysisVernacularAlternative)
+            if languageTagOrHandle:
+                WSHandle = self.__WSHandle(languageTagOrHandle, None)
+                return mua.get_String(WSHandle)
+            else:
+                return ITsString(mua.BestAnalysisVernacularAlternative)
 
         elif cellarPropertyType == CellarPropertyType.Integer:
             return self.project.DomainDataByFlid.get_IntProp(hvo, fieldID)
@@ -824,8 +835,8 @@ class FLExProject (object):
         
     def LexiconFieldIsStringType(self, fieldID):
         """
-        Returns True if the given field is a string type suitable for use
-        with LexiconAddTagToField(), otherwise returns False.
+        Returns True if the given field is a simple string type suitable 
+        for use with LexiconAddTagToField(), otherwise returns False.
         """
         if not fieldID: raise FP_NullParameterError()
         
@@ -834,29 +845,41 @@ class FLExProject (object):
         return cellarPropertyType in FLExLCM.CellarStringTypes
 
         
-    def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID):
+    def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID,
+                            languageTagOrHandle=None):
         """
         Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
+        Returns the empty string if the value is null.
+        languageTagOrHandle only applies to MultiStrings; if None the
+        default Analysis writing system is returned. 
+        
+        Note: if the field is a vernacular WS field, then the 
+        languageTagOrHandle must be specified.
 
-        For normal fields use the object directly with get_String(). E.g.::
+        For normal fields the object can be used directly with 
+        get_String(). E.g.::
         
             lexForm = lexEntry.LexemeFormOA
             lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
         """
+        
         if not senseOrEntryOrHvo: raise FP_NullParameterError()
         if not fieldID: raise FP_NullParameterError()
 
-        value = self.GetCustomFieldValue(senseOrEntryOrHvo, fieldID)
+        value = self.GetCustomFieldValue(senseOrEntryOrHvo, 
+                                         fieldID,
+                                         languageTagOrHandle)
 
         # (value.Text is None if the field is empty.)
         if value and value.Text and value.Text != u"***":
             return value.Text
         else:
             return u""
+
         
-        
-    def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, languageTagOrHandle=None):
+    def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, 
+                            languageTagOrHandle=None):
         """
         Set the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
@@ -864,7 +887,8 @@ class FLExProject (object):
         NOTE: writes the string in one writing system only (defaults
         to the default analysis WS.)
 
-        For normal fields use the object directly with set_String(). E.g.::
+        For normal fields the object can be used directly with
+        set_String(). E.g.::
         
             lexForm = lexEntry.LexemeFormOA
             mkstr = TsStringUtils.MakeString("text to write", WSHandle) 
@@ -884,16 +908,63 @@ class FLExProject (object):
             hvo = senseOrEntryOrHvo
 
         mdc = self.project.MetaDataCacheAccessor
-        if mdc.GetFieldType(fieldID) != CellarPropertyType.String:
-            raise FP_ParameterError("LexiconSetFieldText: field is not String type")
+        fieldType = mdc.GetFieldType(fieldID)
 
         tss = TsStringUtils.MakeString(text, WSHandle)
+        
+        if fieldType in FLExLCM.CellarStringTypes:
+            try:
+                self.project.DomainDataByFlid.SetString(hvo, fieldID, tss)
+            except LcmInvalidFieldException as msg:
+                # This exception indicates that the project is not in write mode
+                raise FP_ReadOnlyError()
+        elif fieldType in FLExLCM.CellarMultiStringTypes:
+            # MultiUnicodeAccessor
+            mua = self.project.DomainDataByFlid.get_MultiStringProp(hvo, fieldID)
+            try:
+                mua.set_String(WSHandle, tss)
+            except LcmInvalidFieldException as msg:
+                raise FP_ReadOnlyError()        
+        else:
+            raise FP_ParameterError("LexiconSetFieldText: field is not a supported type")
+            
 
+    def LexiconClearField(self, senseOrEntryOrHvo, fieldID):
+        """
+        Clears the string field or all of the strings (writing systems)
+        in a multi-string field.
+        Can be used to clear out a custom field.
+        """
+
+        if not self.writeEnabled: raise FP_ReadOnlyError()
+
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
+        
         try:
-            self.project.DomainDataByFlid.SetString(hvo, fieldID, tss)
-        except LcmInvalidFieldException as msg:
-            # This exception indicates that the project is not in write mode
-            raise FP_ReadOnlyError()
+            hvo = senseOrEntryOrHvo.Hvo
+        except AttributeError:
+            hvo = senseOrEntryOrHvo
+
+        mdc = self.project.MetaDataCacheAccessor
+        fieldType = mdc.GetFieldType(fieldID)
+        
+        if fieldType in FLExLCM.CellarStringTypes:
+            try:
+                self.project.DomainDataByFlid.SetString(hvo, fieldID, None)
+            except LcmInvalidFieldException as msg:
+                # This exception indicates that the project is not in write mode
+                raise FP_ReadOnlyError()
+        elif fieldType in FLExLCM.CellarMultiStringTypes:
+            # MultiUnicodeAccessor
+            mua = self.project.DomainDataByFlid.get_MultiStringProp(hvo, fieldID)
+            try:
+                for ws in (self.GetAllAnalysisWSs() | self.GetAllVernacularWSs()):
+                    mua.set_String(self.WSHandle(ws), None)
+            except LcmInvalidFieldException as msg:
+                raise FP_ReadOnlyError()        
+        else:
+            raise FP_ParameterError("LexiconClearField: field is not a supported type")
 
 
     def LexiconSetFieldInteger(self, senseOrEntryOrHvo, fieldID, integer):

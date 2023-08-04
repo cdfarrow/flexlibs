@@ -37,6 +37,7 @@ from SIL.LCModel import (
                             WfiMorphBundleTags,
     TextTags,
     ITextRepository,
+    IStTxtPara,
     ISegmentRepository,
     IReversalIndex, IReversalIndexEntry, ReversalIndexEntryTags,
     IMoMorphType,
@@ -48,10 +49,18 @@ from SIL.LCModel import (
     IUndoStackManager,
     )
 
-from SIL.LCModel.Core.Cellar import CellarPropertyType
+from SIL.LCModel.Core.Cellar import (
+    CellarPropertyType, 
+    CellarPropertyTypeFilter,
+    )
+    
+from SIL.LCModel.Infrastructure import (
+    IFwMetaDataCacheManaged,
+    )
+
 from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
 from SIL.LCModel.Core.Text import TsStringUtils
-from SIL.LCModel.Utils import WorkerThreadException
+from SIL.LCModel.Utils import WorkerThreadException, ReflectionHelper
 from SIL.FieldWorks.Common.FwUtils import (
     StartupException,
     FwAppArgs,
@@ -584,7 +593,7 @@ class FLExProject (object):
         """
         Returns the headword for the entry
         """
-        return entry.ReferenceName
+        return entry.HeadWord.Text
 
         
     def LexiconGetLexemeForm(self, entry, languageTagOrHandle=None):
@@ -757,15 +766,6 @@ class FLExProject (object):
 
         
     def LexiconEntryAnalysesCount(self, entry):
-        # This is replicated from LexEntry.EntryAnalysesCount (v8.0.10)
-        # JohnT: You could call it by reflection (it's actually a public
-        # method which any instance of ILexEntry will implement; 
-        # but it's not part of the interface ILexEntry, and you can't 
-        # cast to LexEntry outside the LCM assembly because LexEntry 
-        # is internal).
-        # Assuming you have a reference to PalasoUIWindowsForms and are 
-        # using ReflectionHelper, you should be able to get it with
-        # (int)ReflectionHelper.GetProperty(someILexEntry, "EntryAnalysesCount").
         """
         Returns a count of the occurences of the entry in the text corpus.
 
@@ -774,20 +774,17 @@ class FLExProject (object):
         but is the same as reported in Fieldworks in the Number of Analyses
         column. See LT-13997.
         """
-        count = 0
-        forms = list()
-        if entry.LexemeFormOA:
-            forms.append(entry.LexemeFormOA)
-        for mfo in entry.AlternateFormsOS:
-            forms.append(mfo)
-        for mfo in forms:
-            for cmo in mfo.ReferringObjects:
-                if self.project.ClassIsOrInheritsFrom(cmo.ClassID,
-                                                 WfiMorphBundleTags.kClassId):
-                    c = IWfiAnalysis(cmo.Owner).OccurrencesInTexts.Count
-                    #report.Info(u"   %s = %i" % (ITsString(IWfiAnalysis(cmo.Owner).ChooserNameTS).Text, c))
-                    count += c
+        
+        # EntryAnalysesCount is not part of the interface ILexEntry, 
+        # and you can't cast to LexEntry outside the LCM assembly 
+        # because LexEntry is internal.
+        # Therefore we use reflection since it is a public method which 
+        # any instance of ILexEntry implements.
+        # (Instructions from JohnT)
+
+        count = ReflectionHelper.GetProperty(entry, "EntryAnalysesCount")
         return count
+
 
     # --- Lexicon: field functions ---
 
@@ -812,14 +809,14 @@ class FLExProject (object):
             hvo = senseOrEntryOrHvo
             
         # Adapted from XDumper.cs::GetCustomFieldValue
-        mdc = self.project.MetaDataCacheAccessor
-        cellarPropertyType = mdc.GetFieldType(fieldID)
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
 
-        if cellarPropertyType in FLExLCM.CellarStringTypes:
+        if fieldType in FLExLCM.CellarStringTypes:
             return ITsString(self.project.DomainDataByFlid.\
                              get_StringProp(hvo, fieldID))
                              
-        elif cellarPropertyType in FLExLCM.CellarMultiStringTypes:
+        elif fieldType in FLExLCM.CellarMultiStringTypes:
             mua = self.project.DomainDataByFlid.get_MultiStringProp(hvo, fieldID)
             if languageTagOrHandle:
                 WSHandle = self.__WSHandle(languageTagOrHandle, None)
@@ -827,7 +824,7 @@ class FLExProject (object):
             else:
                 return ITsString(mua.BestAnalysisVernacularAlternative)
 
-        elif cellarPropertyType == CellarPropertyType.Integer:
+        elif fieldType == CellarPropertyType.Integer:
             return self.project.DomainDataByFlid.get_IntProp(hvo, fieldID)
             
         return None
@@ -840,9 +837,9 @@ class FLExProject (object):
         """
         if not fieldID: raise FP_NullParameterError()
         
-        mdc = self.project.MetaDataCacheAccessor
-        cellarPropertyType = mdc.GetFieldType(fieldID)
-        return cellarPropertyType in FLExLCM.CellarStringTypes
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        return fieldType in FLExLCM.CellarStringTypes
 
         
     def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID,
@@ -907,8 +904,8 @@ class FLExProject (object):
         except AttributeError:
             hvo = senseOrEntryOrHvo
 
-        mdc = self.project.MetaDataCacheAccessor
-        fieldType = mdc.GetFieldType(fieldID)
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
 
         tss = TsStringUtils.MakeString(text, WSHandle)
         
@@ -946,8 +943,8 @@ class FLExProject (object):
         except AttributeError:
             hvo = senseOrEntryOrHvo
 
-        mdc = self.project.MetaDataCacheAccessor
-        fieldType = mdc.GetFieldType(fieldID)
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         
         if fieldType in FLExLCM.CellarStringTypes:
             try:
@@ -983,8 +980,8 @@ class FLExProject (object):
         except AttributeError:
             hvo = senseOrEntryOrHvo
 
-        mdc = self.project.MetaDataCacheAccessor
-        if mdc.GetFieldType(fieldID) != CellarPropertyType.Integer:
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        if CellarPropertyType(mdc.GetFieldType(fieldID)) != CellarPropertyType.Integer:
             raise FP_ParameterError("LexiconSetFieldInteger: field is not Integer type")
 
         if self.project.DomainDataByFlid.get_IntProp(hvo, fieldID) != integer:
@@ -1027,8 +1024,9 @@ class FLExProject (object):
 
         # The MetaDataCache defines the project structure: we can
         # find the custom fields in here.
-        mdc = self.project.MetaDataCacheAccessor
-        for flid in mdc.GetFields(classID, False, -1):
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        
+        for flid in mdc.GetFields(classID, False, int(CellarPropertyTypeFilter.All)):
             if self.project.GetIsCustomField(flid):
                 yield ((flid, mdc.GetFieldLabel(flid)))
 
@@ -1150,8 +1148,8 @@ class FLExProject (object):
                 content = []
                 if t.ContentsOA:
                     for p in t.ContentsOA.ParagraphsOS:
-                        if ITsString(p.Contents).Text:
-                            content.append(ITsString(p.Contents).Text)
+                        if para := ITsString(IStTxtPara(p).Contents).Text:
+                            content.append(para)
                 
                 if supplyName:
                     name = ITsString(t.Name.BestVernacularAnalysisAlternative).Text

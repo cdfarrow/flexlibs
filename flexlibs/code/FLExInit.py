@@ -45,21 +45,6 @@ from . import FLExGlobals
 FLExGlobals.InitialiseFWGlobals() 
 
 
-# This is a workaround to redirect the dll loading to old versions of 
-# dlls that are still needed by some FLEx libraries. FLEx handles it via 
-# a redirect in its .config file, but we don't have one of those with 
-# FLExTools. When FLEx updates the dlls again, simply drop the *old* dll 
-# into the flex-dlls\ folder.
-
-lib_path = os.path.join(os.path.dirname(__file__), 
-                        r"..\flex-dlls\*.dll")
- 
-for dll in glob.glob(lib_path):
-    dll_path = os.path.abspath(dll)
-    logger.debug("".join(("Adding Reference to local dll: ", dll_path)))
-    clr.AddReference(dll_path)
-
-
 clr.AddReference("FwUtils")
 from SIL.FieldWorks.Common.FwUtils import FwRegistryHelper, FwUtils
 clr.AddReference("SIL.WritingSystems")

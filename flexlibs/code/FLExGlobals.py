@@ -120,7 +120,7 @@ def InitialiseFWGlobals():
     # Add the FW code directory to the search path for importing FW libs.
     sys.path.append(FWCodeDir)
 
-    logger.info("sys.path = %s" % "\n\t".join(sys.path))
+    logger.info("sys.path = \n\t%s" % "\n\t".join(sys.path))
 
     # These can't be imported until the path is set:
     clr.AddReference("FwUtils")
@@ -136,3 +136,4 @@ def InitialiseFWGlobals():
     logger.info("FWProjectsDir = %s" % FWProjectsDir)
     logger.info("FWShortVersion = %s" % FWShortVersion)
     logger.info("FWLongVersion = %s" % FWLongVersion)
+

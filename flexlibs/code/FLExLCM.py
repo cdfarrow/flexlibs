@@ -45,10 +45,10 @@ from SIL.FieldWorks.FwCoreDlgs import ChooseLangProjectDialog
 
 #--- Globals --------------------------------------------------------
 
-CellarStringTypes      = (CellarPropertyType.String, )
-CellarMultiStringTypes = (CellarPropertyType.MultiUnicode,
-                          CellarPropertyType.MultiString)
-
+CellarStringTypes      = {CellarPropertyType.String, }
+CellarMultiStringTypes = {CellarPropertyType.MultiUnicode,
+                          CellarPropertyType.MultiString}
+CellarAllStringTypes   = CellarStringTypes | CellarMultiStringTypes
 #-----------------------------------------------------------
 
 def GetListOfProjects():

@@ -841,6 +841,29 @@ class FLExProject (object):
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         return fieldType in FLExLCM.CellarStringTypes
 
+    def LexiconFieldIsMultiType(self, fieldID):
+        """
+        Returns True if the given field is a multi string type
+        (MultiUnicode or MultiString)
+        """
+        if not fieldID: raise FP_NullParameterError()
+        
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        return fieldType in FLExLCM.CellarMultiTypes
+
+        
+    def LexiconFieldIsAnyStringType(self, fieldID):
+        """
+        Returns True if the given field is any of the string types.
+        """
+        if not fieldID: raise FP_NullParameterError()
+        
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        return fieldType in FLExLCM.CellarAllStringTypes
+
+        
         
     def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID,
                             languageTagOrHandle=None):

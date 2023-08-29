@@ -690,7 +690,20 @@ class FLExProject (object):
         tr = ITsString(translation.Translation.get_String(WSHandle)).Text
         return tr or u""
 
-    
+
+    def LexiconGetSenseNumber(self, sense):
+        """
+        Returns the sense number for the sense. (This is not available 
+        directly from ILexSense.)
+        """
+        
+        # SenseNumber is not part of the interface ILexSense, but it 
+        # is a public member of LexSense, which we can access by reflection.
+
+        senseNumber = ReflectionHelper.GetProperty(sense, "SenseNumber")
+        return senseNumber
+
+
     #  (Analysis WS fields)
 
     def LexiconGetSenseGloss(self, sense, languageTagOrHandle=None):
@@ -767,7 +780,7 @@ class FLExProject (object):
         
     def LexiconEntryAnalysesCount(self, entry):
         """
-        Returns a count of the occurences of the entry in the text corpus.
+        Returns a count of the occurrences of the entry in the text corpus.
 
         NOTE: As of Fieldworks 8.0.10 this calculation can be slightly off
         (the same analysis in the same text segment is only counted once),
@@ -783,6 +796,18 @@ class FLExProject (object):
         # (Instructions from JohnT)
 
         count = ReflectionHelper.GetProperty(entry, "EntryAnalysesCount")
+        return count
+
+
+    def LexiconSenseAnalysesCount(self, sense):
+        """
+        Returns a count of the occurrences of the sense in the text corpus.
+        """
+        
+        # SenseAnalysesCount is not part of the interface ILexSense, but it 
+        # is a public member of LexSense, which we can access by reflection.
+
+        count = ReflectionHelper.GetProperty(sense, "SenseAnalysesCount")
         return count
 
 
@@ -841,6 +866,29 @@ class FLExProject (object):
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         return fieldType in FLExLCM.CellarStringTypes
 
+    def LexiconFieldIsMultiType(self, fieldID):
+        """
+        Returns True if the given field is a multi string type
+        (MultiUnicode or MultiString)
+        """
+        if not fieldID: raise FP_NullParameterError()
+        
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        return fieldType in FLExLCM.CellarMultiTypes
+
+        
+    def LexiconFieldIsAnyStringType(self, fieldID):
+        """
+        Returns True if the given field is any of the string types.
+        """
+        if not fieldID: raise FP_NullParameterError()
+        
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        return fieldType in FLExLCM.CellarAllStringTypes
+
+        
         
     def LexiconGetFieldText(self, senseOrEntryOrHvo, fieldID,
                             languageTagOrHandle=None):

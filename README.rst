@@ -15,11 +15,11 @@ on FLEx databases see FLExTools [2]_, which is built on flexlibs.
 Requirements
 ------------
 
-flexlibs supports Python 3.6, 3.7 and 3.8.
+Python 3.6 - 3.11.
 
-Python for .NET [3]_ version 2.5.
+Python for .NET [3]_ version 3.0.1.
 
-FieldWorks Language Explorer 9.0.17 Stable Release or higher.
+FieldWorks Language Explorer 9.0.17 - 9.1.22.
 
 
 32-bit vs 64-bit
@@ -37,4 +37,4 @@ Run:
 
 .. [1] https://software.sil.org/fieldworks/
 .. [2] https://github.com/cdfarrow/flextools/wiki/
-.. [3] https://github.com/pythonnet/pythonnet
+.. [3] https://github.com/pythonnet/pythonnet/wiki

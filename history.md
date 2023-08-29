@@ -2,10 +2,33 @@
 
 ## Known Issues
 
-* pythonnet 3.0 has been released, but flexlibs hasn't been updated to work with it yet.
-* Requires Python <= 3.8 due to pythonnet's requirements.
+None
 
 ## History
+
+### 1.2.1 - 29 Aug 2023
+
++ Supports Python 3.6 - 3.11
++ Supports FieldWorks 9.0.4 - 9.1.22
+    
++ New functions:
+    + LexiconFieldIsMultiType() 
+    + LexiconFieldIsAnyStringType()
+    + LexiconGetSenseNumber()
+    + LexiconSenseAnalysesCount()
+
+### 1.2.0 - 16 Aug 2023
+
++ Moved to pythonnet 3.0.1, which supports:
+
++ FieldWorks dlls no longer need to be included, so the package size 
+  has been greatly reduced.
+
+### 1.1.8 - 11 Apr 2023
+
++ Added LexiconClearField()
++ Updated Set/Get Field functions to handle MultiStrings and a WS 
+  parameter (fully backward compatible).
 
 ### 1.1.6 - 24 Nov 2022
 

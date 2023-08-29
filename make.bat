@@ -1,8 +1,8 @@
 @ECHO OFF
 REM Simple build commands for flexlibs
 
-REM We require this version of Python for doing the build
-set PYTHON=py -3.8
+REM Build with the default Python version
+set PYTHON=py
 
 REM Check that the argument is a valid command, and do it. /I ignores case.
 FOR %%C IN ("Init"
@@ -42,6 +42,9 @@ FOR %%C IN ("Init"
 
     @REM Build the wheel
     %PYTHON% -m build -w
+    
+    @REM Check for package errors
+    %PYTHON% -m twine check .\dist\*
     goto :End
     
 :DoPublish

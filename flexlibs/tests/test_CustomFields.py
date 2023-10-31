@@ -15,11 +15,11 @@ CUSTOM_VALUE = r"Test.Value"
 
 class TestSuite(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(self):
         FLExInitialize()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(self):
         FLExCleanup()
 
     def _openProject(self):

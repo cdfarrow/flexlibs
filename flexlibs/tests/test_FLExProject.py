@@ -10,11 +10,11 @@ from flexlibs import FLExProject, AllProjectNames
 
 class TestFLExProject(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(self):
         FLExInitialize()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(self):
         FLExCleanup()
 
     def test_AllProjectNames(self):

@@ -6,6 +6,11 @@ None
 
 ## History
 
+### 1.2.2 - 15 Nov 2023
+
++ Supports Python 3.8 - 3.12
++ Supports FieldWorks 9.0.4 - 9.1.24
+
 ### 1.2.1 - 29 Aug 2023
 
 + Supports Python 3.6 - 3.11
@@ -19,7 +24,7 @@ None
 
 ### 1.2.0 - 16 Aug 2023
 
-+ Moved to pythonnet 3.0.1, which supports:
++ Moved to pythonnet 3.0.1, which supports FieldWorks 9.1.22
 
 + FieldWorks dlls no longer need to be included, so the package size 
   has been greatly reduced.

@@ -15,11 +15,11 @@ on FLEx databases see FLExTools [2]_, which is built on flexlibs.
 Requirements
 ------------
 
-Python 3.6 - 3.11.
+Python 3.8 - 3.12.
 
-Python for .NET [3]_ version 3.0.1.
+Python for .NET [3]_ version 3.0.3.
 
-FieldWorks Language Explorer 9.0.17 - 9.1.22.
+FieldWorks Language Explorer 9.0.17 - 9.1.24.
 
 
 32-bit vs 64-bit

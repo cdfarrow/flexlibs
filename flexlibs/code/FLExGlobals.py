@@ -98,17 +98,48 @@ def InitialiseFWGlobals():
         logging.exception("Couldn't find FieldWorks registry entry")
         raise
 
-    FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+    if platform.system() == "Linux":
+        # **********************************************************
+        # TODO: First attempt at Linux support. 
+        # As of Apr2024, FW installation has changed to use flatpak
+        # and this no longer works.
+        # **********************************************************
+        # On Linux, for installed versions of Flex,
+        # FWREG_CODEDIR points to /usr/share/fieldworks,
+        # but FieldWorks.exe resides in /usr/lib/fieldworks.
+        # I can't find any registry keys/values that point to
+        # the correct location.
+        # For installed version, the app calls /bin/fieldworks-flex
+        # from /usr/share/applications/fieldworks-applicatoins.desktop,
+        # which in turn calls /usr/lib/fieldworks/run-app FieldWorks.exe etc.
+        #
+        # The following is based on the logic in /usr/lib/fieldworks/environ
+        FWCodeDir = os.path.join(rKey.GetValue(FWREG_CODEDIR), "../../lib/fieldworks")
+    else:
+        # On windows, FWREG_CODEDIR is correct.
+        FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+
+    # FWREG_PROJECTSDIR is correct on Windows and Linux.
     FWProjectsDir = rKey.GetValue(FWREG_PROJECTSDIR)
 
-    # On developer's machines we also check the build directories 
-    # for FieldWorks.exe
-
     if not os.access(os.path.join(FWCodeDir, "FieldWorks.exe"), os.F_OK):
-        if os.access(os.path.join(FWCodeDir, r"..\Output\Release\FieldWorks.exe"), os.F_OK):
-            FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Release")
-        elif os.access(os.path.join(FWCodeDir, r"..\Output\Debug\FieldWorks.exe"), os.F_OK):
-            FWCodeDir = os.path.join(FWCodeDir, r"..\Output\Debug")
+        # On developer's machines we also check the build directories 
+        # for FieldWorks.exe
+        if platform.system() == "Linux":
+            devPaths = [
+                os.path.dirname(rKey.GetValue(FWREG_CODEDIR)),
+                ]
+        else:
+            # Windows
+            devPaths = [
+                os.path.join(FWCodeDir, r"..\Output\Release\\"),
+                os.path.join(FWCodeDir, r"..\Output\Debug\\"),
+                ]
+
+        for p in devPaths:
+            if os.access(os.path.join(p, "FieldWorks.exe"), os.F_OK):
+                FWCodeDir = p
+                break
         else:
             # This can happen if there is a ghost registry entry for 
             # an uninstalled FLEx

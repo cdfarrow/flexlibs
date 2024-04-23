@@ -155,19 +155,20 @@ class FLExProject (object):
         from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
         from SIL.LCModel.Core.Text import TsStringUtils 
 
-        fp = FLExProject()
+        project = FLExProject()
         try:
-            fp.OpenProject("my project",
-                           writeEnabled = True/False)
+            project.OpenProject("my project",
+                                writeEnabled = True/False)
         except:
             #"Failed to open project"
-            del fp
+            del project
+            exit(1)
 
-        WSHandle = fp.WSHandle('en')
+        WSHandle = project.WSHandle('en')
 
         # Traverse the whole lexicon
-        for lexEntry in fp.LexiconAllEntries():
-            headword = fp.LexiconGetHeadword(lexEntry)
+        for lexEntry in project.LexiconAllEntries():
+            headword = project.LexiconGetHeadword(lexEntry)
 
             # Use get_String() and set_String() with text fields:
             lexForm = lexEntry.LexemeFormOA                                            

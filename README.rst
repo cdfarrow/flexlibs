@@ -33,6 +33,25 @@ Installation
 Run:
 ``pip install flexlibs``
 
+Usage
+-----
+
+.. code-block:: python
+
+
+  import flexlibs
+  flexlibs.FLExInitialize()
+  p = flexlibs.FLExProject()
+  p.OpenProject('parser-experiments')
+  p.GetPartsOfSpeech()
+  # ['Adverb', 'Noun', 'Pro-form', 'Pronoun', 'Verb', 'Copulative verb', 'Ditransitive verb', 'Intransitive verb', 'Transitive verb', 'Coordinating connective']
+
+  # The API documentation is an HTML file
+  os.startfile(flexlibs.APIHelpFile)
+  ...
+  p.CloseProject()
+  flexlibs.FLExCleanup()
+
 --------------
 
 .. [1] https://software.sil.org/fieldworks/

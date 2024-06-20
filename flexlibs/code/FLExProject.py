@@ -600,6 +600,9 @@ class FLExProject (object):
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
+        if not entry.LexemeFormOA:
+            return ""
+            
         # MultiUnicodeAccessor
         form = ITsString(entry.LexemeFormOA.Form.get_String(WSHandle)).Text
         return form or ""

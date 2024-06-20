@@ -64,16 +64,13 @@ def GetListOfProjects():
 
 #-----------------------------------------------------------
 
-def OpenProject(projectName, writeEnabled = False):
+def OpenProject(projectName):
     """
     Open a FieldWorks project.
 
     projectName:
         - Either the full path including ".fwdata" suffix, or
         - The name only, opened from the default project location.
-
-    writeEnabled : (Awaiting FW support for a read-only mode so that
-                    FW doesn't have to be closed for read-only operations.)
     """
 
     projectFileName = LcmFileHelper.GetXmlDataFileName(projectName)

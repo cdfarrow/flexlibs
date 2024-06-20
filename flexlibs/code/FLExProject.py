@@ -205,8 +205,7 @@ class FLExProject (object):
         """
         
         try:
-            self.project = FLExLCM.OpenProject(projectName, 
-                                               writeEnabled)
+            self.project = FLExLCM.OpenProject(projectName)
             
         except System.IO.FileNotFoundException as e:
             raise FP_FileNotFoundError(projectName, e)

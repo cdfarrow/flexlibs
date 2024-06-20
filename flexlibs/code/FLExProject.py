@@ -10,11 +10,8 @@
 #             (ITsString doesn't work in IRONPython)
 #             FieldWorks Version 9
 #
-#   Copyright Craig Farrow, 2008 - 2022
+#   Copyright Craig Farrow, 2008 - 2024
 #
-
-from builtins import str
-from builtins import object
 
 import logging
 logger = logging.getLogger(__name__)
@@ -171,7 +168,7 @@ class FLExProject (object):
             headword = project.LexiconGetHeadword(lexEntry)
 
             # Use get_String() and set_String() with text fields:
-            lexForm = lexEntry.LexemeFormOA                                            
+            lexForm = lexEntry.LexemeFormOA                              
             lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
             newValue = convert_headword(lexEntryValue)
             mkstr = TsStringUtils.MakeString(newValue, WSHandle) 
@@ -750,8 +747,8 @@ class FLExProject (object):
         defn = ITsString(sense.Definition.get_String(WSHandle)).Text
         return defn or ""
 
-    #  (Non-string types)
     
+    #  (Non-string types)
     
     def LexiconGetSensePOS(self, sense):
         """
@@ -866,6 +863,7 @@ class FLExProject (object):
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         return fieldType in FLExLCM.CellarStringTypes
+
 
     def LexiconFieldIsMultiType(self, fieldID):
         """
@@ -1085,12 +1083,14 @@ class FLExProject (object):
                 return flid
         return None
 
+
     def LexiconGetEntryCustomFields(self):
         """
         Returns a list of the custom fields defined at Entry level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(LexEntryTags.kClassId))
+
 
     def LexiconGetSenseCustomFields(self):
         """
@@ -1099,6 +1099,7 @@ class FLExProject (object):
         """
         return list(self.__GetCustomFieldsOfType(LexSenseTags.kClassId))
 
+
     def LexiconGetEntryCustomFieldNamed(self, fieldName):
         """
         Return the entry-level field ID given its name.
@@ -1106,6 +1107,7 @@ class FLExProject (object):
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexEntryTags.kClassId, fieldName)
+
 
     def LexiconGetSenseCustomFieldNamed(self, fieldName):
         """
@@ -1133,6 +1135,7 @@ class FLExProject (object):
 
         return None
 
+
     def ReversalEntries(self, languageTag):
         """
         Returns an iterator for the reversal entries for the given language
@@ -1145,6 +1148,7 @@ class FLExProject (object):
         else:
             return None
 
+
     def ReversalGetForm(self, entry, languageTagOrHandle=None):
         """
         Returns the citation form for the reversal entry in the Default
@@ -1154,6 +1158,7 @@ class FLExProject (object):
         
         form = ITsString(entry.ReversalForm.get_String(WSHandle)).Text
         return form or ""
+
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
@@ -1178,7 +1183,8 @@ class FLExProject (object):
 
     def TextsNumberOfTexts(self):
         return self.ObjectCountFor(ITextRepository)
-        
+
+
     def TextsGetAll(self, supplyName=True, supplyText=True):
         """
         A Generator that returns tuples of (Name, Text) where:

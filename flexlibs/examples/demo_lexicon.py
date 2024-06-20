@@ -43,12 +43,12 @@ def reportLexicalEntries(project):
     # using Standard Format markers.
     # (Uses a slice to only print a portion.)
     for e in list(project.LexiconAllEntries())[:LexiconMaxEntries]:
-        print("\lx", project.LexiconGetLexemeForm(e))
-        print("\lc", project.LexiconGetCitationForm(e))
+        print(r"\lx", project.LexiconGetLexemeForm(e))
+        print(r"\lc", project.LexiconGetCitationForm(e))
         for sense in e.SensesOS :
-            print("\ge", project.LexiconGetSenseGloss(sense))
-            print("\pos", project.LexiconGetSensePOS(sense))
-            print("\def", project.LexiconGetSenseDefinition(sense))
+            print(r"\ge", project.LexiconGetSenseGloss(sense))
+            print(r"\pos", project.LexiconGetSensePOS(sense))
+            print(r"\def", project.LexiconGetSenseDefinition(sense))
             if WriteTests and ftflagsFlid:
                 flags = project.LexiconGetFieldText(sense, ftflagsFlid)
                 print("FTFlags", flags)
@@ -67,7 +67,7 @@ def reportLexicalEntries(project):
 
             for example in sense.ExamplesOS:
                 ex = project.LexiconGetExample(example)
-                print("\ex", ex)
+                print(r"\ex", ex)
                 if WriteTests and not ex:
                     # CHANGES the project
                     print("Setting example")

@@ -294,7 +294,7 @@ class FLExProject (object):
         if not stringObj: raise FP_NullParameterError()
         
         s = ITsString(stringObj.BestAnalysisVernacularAlternative).Text
-        return u"" if s == "***" else s
+        return "" if s == "***" else s
         
     # --- LCM Utilities ---
     
@@ -481,18 +481,18 @@ class FLExProject (object):
             raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
 
         if flexObject.ClassID == ReversalIndexEntryTags.kClassId:
-            tool = u"reversalToolEditComplete"
+            tool = "reversalToolEditComplete"
 
         elif flexObject.ClassID in (WfiWordformTags.kClassId,
                                 WfiAnalysisTags.kClassId,
                                 WfiGlossTags.kClassId):
-            tool = u"Analyses"
+            tool = "Analyses"
             
         elif flexObject.ClassID == TextTags.kClassId:
-            tool = u"interlinearEdit"
+            tool = "interlinearEdit"
             
         else:
-            tool = u"lexiconEdit"                # Default tool is Lexicon Edit
+            tool = "lexiconEdit"                # Default tool is Lexicon Edit
 
         # Build the URL
         linkObj = FwAppArgs(self.project.ProjectId.Handle,
@@ -606,7 +606,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(entry.LexemeFormOA.Form.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetCitationForm(self, entry, languageTagOrHandle=None):
@@ -618,7 +618,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(entry.CitationForm.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetPublishInCount(self, entry):
@@ -637,7 +637,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(pronunciation.Form.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetExample(self, example, languageTagOrHandle=None):
@@ -649,7 +649,7 @@ class FLExProject (object):
         
         # Example is a MultiString
         ex = ITsString(example.Example.get_String(WSHandle)).Text
-        return ex or u""
+        return ex or ""
 
         
     def LexiconSetExample(self, example, newString, languageTagOrHandle=None):
@@ -689,7 +689,7 @@ class FLExProject (object):
         
         # Translation is a MultiString
         tr = ITsString(translation.Translation.get_String(WSHandle)).Text
-        return tr or u""
+        return tr or ""
 
 
     def LexiconGetSenseNumber(self, sense):
@@ -716,7 +716,7 @@ class FLExProject (object):
         
         # MultiUnicodeAccessor
         gloss = ITsString(sense.Gloss.get_String(WSHandle)).Text
-        return gloss or u""
+        return gloss or ""
 
         
     def LexiconSetSenseGloss(self, sense, gloss, languageTagOrHandle=None):
@@ -748,7 +748,7 @@ class FLExProject (object):
         
         # Definition is a MultiString
         defn = ITsString(sense.Definition.get_String(WSHandle)).Text
-        return defn or u""
+        return defn or ""
 
     #  (Non-string types)
     
@@ -918,10 +918,10 @@ class FLExProject (object):
                                          languageTagOrHandle)
 
         # (value.Text is None if the field is empty.)
-        if value and value.Text and value.Text != u"***":
+        if value and value.Text and value.Text != "***":
             return value.Text
         else:
-            return u""
+            return ""
 
         
     def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, 
@@ -1153,7 +1153,7 @@ class FLExProject (object):
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
         form = ITsString(entry.ReversalForm.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
@@ -1202,7 +1202,7 @@ class FLExProject (object):
                 
                 if supplyName:
                     name = ITsString(t.Name.BestVernacularAnalysisAlternative).Text
-                    yield name, u"\n".join(content)        
+                    yield name, "\n".join(content)        
                 else:                
-                    yield u"\n".join(content)        
+                    yield "\n".join(content)        
 

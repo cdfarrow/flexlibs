@@ -39,7 +39,7 @@ from SIL.LCModel import (
     IReversalIndex, IReversalIndexEntry, ReversalIndexEntryTags,
     IMoMorphType,
     SpecialWritingSystemCodes,
-    IMultiStringAccessor,
+    IMultiUnicode, IMultiString,
     LcmInvalidFieldException,
     LcmFileLockedException,
     LcmDataMigrationForbiddenException,
@@ -285,13 +285,18 @@ class FLExProject (object):
 
     def BestStr(self, stringObj):
         """
-        Generic string extraction function returning the best Analysis or Vernacular string.
+        Generic string function for MultiUnicode and MultiString 
+        objects, returning the best Analysis or Vernacular string.
         """
-        if not stringObj: raise FP_NullParameterError()
-        
-        s = ITsString(stringObj.BestAnalysisVernacularAlternative).Text
+
+        if isinstance(stringObj, (IMultiUnicode, IMultiString)):
+            s = stringObj.BestAnalysisVernacularAlternative.Text
+        else:
+            raise FP_ParameterError("BestStr: stringObj must be an IMultiUnicode or IMultiString")
+
         return "" if s == "***" else s
-        
+
+
     # --- LCM Utilities ---
     
     def UnpackNestedPossibilityList(self, possibilityList, flat=False):
@@ -458,9 +463,9 @@ class FLExProject (object):
         Builds a URL that can be used with os.startfile() to jump to the
         object in Fieldworks. This method currently supports:
 
-            - Lexical Entries
+            - Lexical Entries, Senses and any object within the lexicon
+            - Wordforms, Analyses and Wordform Glosses
             - Reversal Entries
-            - Wordforms
             - Texts
         """
 
@@ -480,8 +485,8 @@ class FLExProject (object):
             tool = "reversalToolEditComplete"
 
         elif flexObject.ClassID in (WfiWordformTags.kClassId,
-                                WfiAnalysisTags.kClassId,
-                                WfiGlossTags.kClassId):
+                                    WfiAnalysisTags.kClassId,
+                                    WfiGlossTags.kClassId):
             tool = "Analyses"
             
         elif flexObject.ClassID == TextTags.kClassId:
@@ -507,8 +512,9 @@ class FLExProject (object):
             - ITextRepository
             - ILexEntryRepository
 
-        (All repository names can be viewed by opening a project in
-        LCMBrowser, which can be launched via the Help menu.)
+        All repository names can be viewed by opening a project in
+        LCMBrowser, which can be launched via the Help menu. Add "I" 
+        to the front and import from SIL.LCModel.
         """
         
         repo = self.project.ServiceLocator.GetInstance(repository)
@@ -523,7 +529,9 @@ class FLExProject (object):
             - ITextRepository
             - ILexEntryRepository
             
-        Open a project in LCMBrowser to identify other repository names.
+        All repository names can be viewed by opening a project in
+        LCMBrowser, which can be launched via the Help menu. Add "I" 
+        to the front and import from SIL.LCModel.
         """
 
         repo = self.project.ServiceLocator.GetInstance(repository)
@@ -543,15 +551,15 @@ class FLExProject (object):
           SIL.LCModel.ILexEntry, which contains:
               - HomographNumber :: integer
               - HomographForm :: string
-              - LexemeFormOA ::  SIL.LCModel.Ling.MoForm
+              - LexemeFormOA ::  SIL.LCModel.IMoForm
                    - Form :: SIL.LCModel.MultiUnicodeAccessor
                       - GetAlternative : Get String for given WS type
                       - SetAlternative : Set string for given WS type
-              - SensesOS :: Ordered collection of SIL.LCModel.Ling.LexSense 
+              - SensesOS :: Ordered collection of SIL.LCModel.ILexSense 
                   - Gloss :: SIL.LCModel.MultiUnicodeAccessor
                   - Definition :: SIL.LCModel.MultiStringAccessor
                   - SenseNumber :: string
-                  - ExamplesOS :: Ordered collection of LexExampleSentence
+                  - ExamplesOS :: Ordered collection of ILexExampleSentence
                       - Example :: MultiStringAccessor
         """
         
@@ -931,7 +939,7 @@ class FLExProject (object):
         Provided for use with custom fields.
 
         NOTE: writes the string in one writing system only (defaults
-        to the default analysis WS.)
+        to the default analysis WS).
 
         For normal fields the object can be used directly with
         set_String(). E.g.::

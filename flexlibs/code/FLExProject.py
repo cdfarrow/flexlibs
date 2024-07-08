@@ -32,6 +32,7 @@ from SIL.LCModel import (
                             WfiGlossTags,
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
+    ILexRefTypeRepository,
     TextTags,
     ITextRepository,
     IStTxtPara,
@@ -443,7 +444,7 @@ class FLExProject (object):
         Returns a nested or flat list of all Semantic Domains defined
         in this project. The list is ordered.
         
-        Return items are objects with properties/methods:
+        Return items are CmSemanticDomain objects with properties/methods:
 
             - Hvo         - ID (value not the same across projects)
             - Guid        - Global Unique ID (same across all projects)
@@ -1128,6 +1129,33 @@ class FLExProject (object):
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)
 
         
+    # --- Lexical Relations ---
+    
+    def GetLexicalRelationTypes(self):
+        """
+        Returns an iterator over LexRefType objects, which define a 
+        type of lexical relation, such as Part-Whole.
+
+        Each LexRefType has:
+            - MembersOC: containing zero or more LexReference objects.
+            - MappingType: an enumeration defining the type of lexical relation.
+            
+        LexReference objects have:
+            - TargetsRS: the LexSense or LexEntry objects in the relation.
+            
+        For example:
+            for lrt in project.GetLexicalRelationTypes():
+                if (lrt.MembersOC.Count > 0):
+                    for lr in lrt.MembersOC:
+                        for target in lr.TargetsRS:
+                            if target.ClassName == "LexEntry":
+                                # LexEntry
+                            else: 
+                                # LexSense
+        """
+        return self.ObjectsIn(ILexRefTypeRepository)
+        
+    
     # --- Publications ---
     
     def GetPublications(self):
@@ -1138,6 +1166,7 @@ class FLExProject (object):
 
         return [self.BestStr(pub.Name) 
                 for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS]
+
 
     def PublicationType(self, publicationName):
         """

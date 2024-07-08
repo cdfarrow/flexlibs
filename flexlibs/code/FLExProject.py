@@ -1023,7 +1023,7 @@ class FLExProject (object):
 
     def LexiconSetFieldInteger(self, senseOrEntryOrHvo, fieldID, integer):
         """
-        Set the integer value for the given entry/sense and field ID.
+        Sets the integer value for the given entry/sense and field ID.
         Provided for use with custom fields.
         """
 
@@ -1128,6 +1128,31 @@ class FLExProject (object):
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)
 
         
+    # --- Publications ---
+    
+    def GetPublications(self):
+        """
+        Returns a list of the names of the publications defined in the
+        project.
+        """
+
+        return [self.BestStr(pub.Name) 
+                for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS]
+
+    def PublicationType(self, publicationName):
+        """
+        Returns the PublicationType object (a CmPossibility) for the
+        given publication name. (A list of publication names can be 
+        found using GetPublications().)
+        """
+
+        for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS:
+            if self.BestStr(pub.Name) == publicationName:
+                return pub
+        else:
+            return None
+
+
     # --- Reversal Indices ---
 
     def ReversalIndex(self, languageTag):
@@ -1172,7 +1197,7 @@ class FLExProject (object):
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
-        Set the Default Analysis reversal form for the given reversal entry:
+        Sets the Default Analysis reversal form for the given reversal entry:
         
             - form must be unicode.
             - languageTagOrHandle can be used to specify a different writing system.
@@ -1192,6 +1217,10 @@ class FLExProject (object):
     # --- Texts ---
 
     def TextsNumberOfTexts(self):
+        """
+        Returns the total number of texts in the project.
+        """
+        
         return self.ObjectCountFor(ITextRepository)
 
 

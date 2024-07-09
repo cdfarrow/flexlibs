@@ -33,6 +33,7 @@ from SIL.LCModel import (
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
     ILexRefTypeRepository,
+    ICmSemanticDomain,
     TextTags,
     ITextRepository,
     IStTxtPara,
@@ -300,9 +301,10 @@ class FLExProject (object):
 
     # --- LCM Utilities ---
     
-    def UnpackNestedPossibilityList(self, possibilityList, flat=False):
+    def UnpackNestedPossibilityList(self, possibilityList, objClass, flat=False):
         """
         Returns a nested or flat list of a Fieldworks Possibility List.
+        objClass is the class of object to cast the CmPossibility elements into.
         
         Return items are objects with properties/methods:
             - Hvo         - ID (value not the same across projects)
@@ -310,12 +312,12 @@ class FLExProject (object):
             - ToString()  - String representation.
         """
         for i in possibilityList:
-            yield i
+            yield objClass(i)
             if flat:
-                for j in self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, flat):
-                    yield j
+                for j in self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, objClass, flat):
+                    yield objClass(j)
             else:
-                l = list(self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, flat))
+                l = list(self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, objClass, flat))
                 if l: yield l
     
     # --- Global: Writing Systems ---
@@ -444,16 +446,13 @@ class FLExProject (object):
         Returns a nested or flat list of all Semantic Domains defined
         in this project. The list is ordered.
         
-        Return items are CmSemanticDomain objects with properties/methods:
-
-            - Hvo         - ID (value not the same across projects)
-            - Guid        - Global Unique ID (same across all projects)
-            - ToString()  - String representation of the semantic domain.
+        Return items are ICmSemanticDomain objects.
         """
 
         # Recursively extract the semantic domains
         return list(self.UnpackNestedPossibilityList(
                         self.lp.SemanticDomainListOA.PossibilitiesOS,
+                        ICmSemanticDomain,
                         flat))
 
 

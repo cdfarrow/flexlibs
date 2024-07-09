@@ -537,7 +537,25 @@ class FLExProject (object):
 
         repo = self.project.ServiceLocator.GetInstance(repository)
         return iter(repo.AllInstances())
-        
+
+
+    def Object(self, guid):
+        """
+        Returns the CmObject for the given Hvo or guid (str or System.Guid).
+        Refer to .ClassName to determine the LCM class.
+        """
+        if isinstance(guid, str):
+            try:
+                guid = System.Guid(guid)
+            except System.FormatException:
+                raise FP_ParameterError("Invalid guid")
+                
+        if isinstance(guid, (System.Guid, int)):
+            return self.project.ServiceLocator.GetObject(guid)
+        else:
+            raise FP_ParameterError("guid must be an Hvo (int), System.Guid or str")
+
+
     # --- Lexicon ---
 
     def LexiconNumberOfEntries(self):
@@ -578,7 +596,7 @@ class FLExProject (object):
             yield e
         
 
-    #  (Writing system utilities)
+    #  Private writing system utilities
     
     def __WSHandle(self, languageTagOrHandle, defaultWS):
         if languageTagOrHandle == None:
@@ -604,7 +622,7 @@ class FLExProject (object):
     def __NormaliseLangTag(self, languageTag):
         return languageTag.replace("-", "_").lower()
     
-    #  (Vernacular WS fields)
+    #  Vernacular WS fields
     
     def LexiconGetHeadword(self, entry):
         """
@@ -724,7 +742,7 @@ class FLExProject (object):
         return senseNumber
 
 
-    #  (Analysis WS fields)
+    #  Analysis WS fields
 
     def LexiconGetSenseGloss(self, sense, languageTagOrHandle=None):
         """
@@ -770,7 +788,7 @@ class FLExProject (object):
         return defn or ""
 
     
-    #  (Non-string types)
+    #  Non-string types
     
     def LexiconGetSensePOS(self, sense):
         """
@@ -788,12 +806,12 @@ class FLExProject (object):
         ToString() and Hvo are available.
         """
 
-        ## SemanticDomainsRC::
-        ##      Count
-        ##      Add(Hvo)
-        ##      Contains(Hvo)
-        ##      Remove(Hvo)
-        ##      RemoveAll()
+        # Methods available for SemanticDomainsRC:
+        #      Count
+        #      Add(Hvo)
+        #      Contains(Hvo)
+        #      Remove(Hvo)
+        #      RemoveAll()
         
         return list(sense.SemanticDomainsRC)
 
@@ -1204,7 +1222,6 @@ class FLExProject (object):
         languageTag = self.__NormaliseLangTag(languageTag)
         
         for ri in self.lexDB.ReversalIndexesOC:
-            #print ri.WritingSystem
             if self.__NormaliseLangTag(ri.WritingSystem) == languageTag:
                 return ri
 

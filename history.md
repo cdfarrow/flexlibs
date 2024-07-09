@@ -6,6 +6,15 @@ None
 
 ## History
 
+### 1.2.3 - 9 Jul 2024
+
++ New functions:
+    + Object(hvo-or-guid)
+    + LexiconAllEntriesSorted()
+    + GetLexicalRelationTypes()
+    + GetPublications()
+    + PublicationType(publicationName)
+
 ### 1.2.2 - 15 Nov 2023
 
 + Supports Python 3.8 - 3.12
@@ -15,7 +24,7 @@ None
 
 + Supports Python 3.6 - 3.11
 + Supports FieldWorks 9.0.4 - 9.1.22
-    
+
 + New functions:
     + LexiconFieldIsMultiType() 
     + LexiconFieldIsAnyStringType()

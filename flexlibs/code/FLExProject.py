@@ -567,6 +567,17 @@ class FLExProject (object):
         return self.ObjectsIn(ILexEntryRepository)
 
 
+    def LexiconAllEntriesSorted(self):
+        """
+        Returns an iterator over all entries in the lexicon sorted by
+        the (lower-case) headword.
+        """
+        entries = [(str(e.HeadWord), e) for e in self.LexiconAllEntries()]
+
+        for h, e in sorted(entries, key=lambda x: x[0].lower()):
+            yield e
+        
+
     #  (Writing system utilities)
     
     def __WSHandle(self, languageTagOrHandle, defaultWS):

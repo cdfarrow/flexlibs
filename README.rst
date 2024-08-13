@@ -19,7 +19,7 @@ Python 3.8 - 3.12.
 
 Python for .NET [3]_ version 3.0.3.
 
-FieldWorks Language Explorer 9.0.17 - 9.1.25.
+FieldWorks Language Explorer 9.0.17 - 9.2.2.
 
 
 32-bit vs 64-bit

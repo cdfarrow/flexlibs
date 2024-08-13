@@ -6,10 +6,16 @@ None
 
 ## History
 
+### 1.2.4 - 14 Aug 2024
+
++ New function:
+    + ObjectRepository(repository)
+
 ### 1.2.3 - 9 Jul 2024
 
++ GetAllSemanticDomains() returns ICmSemanticDomain objects
 + New functions:
-    + Object(hvo-or-guid)
+    + Object(hvoOrGuid)
     + LexiconAllEntriesSorted()
     + GetLexicalRelationTypes()
     + GetPublications()

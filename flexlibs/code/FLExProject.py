@@ -258,7 +258,7 @@ class FLExProject (object):
                 # This must be called to mirror the call to BeginNonUndoableTask().
                 self.project.MainCacheAccessor.EndNonUndoableTask()
                 # Save all changes to disk. (EndNonUndoableTask)
-                usm = self.project.ServiceLocator.GetInstance(IUndoStackManager)
+                usm = self.ObjectRepository(IUndoStackManager)
                 usm.Save()                
                 # logger.debug("Done")
             try:
@@ -470,8 +470,7 @@ class FLExProject (object):
         """
 
         if isinstance(objectOrGuid, System.Guid):
-            objRepository = self.project.ServiceLocator.GetInstance(ICmObjectRepository)
-            flexObject = objRepository.GetObject(objectOrGuid)
+            flexObject = self.Object(objectOrGuid)
         else:
             flexObject = objectOrGuid
             
@@ -479,7 +478,7 @@ class FLExProject (object):
         try:
             flexObject.Guid
         except:
-            raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
+            raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid nor an object with attribute Guid")
 
         if flexObject.ClassID == ReversalIndexEntryTags.kClassId:
             tool = "reversalToolEditComplete"
@@ -504,6 +503,18 @@ class FLExProject (object):
 
     # --- Generic Repository Access ---
 
+    def ObjectRepository(self, repository):        
+        """
+        Returns an object repository.
+        repository is specified by the interface class, such as:
+        
+            - ITextRepository
+            - ILexEntryRepository
+        """
+
+        return self.project.ServiceLocator.GetService(repository)
+
+
     def ObjectCountFor(self, repository):
         """
         Returns the number of objects in the given repository.
@@ -517,7 +528,7 @@ class FLExProject (object):
         to the front and import from SIL.LCModel.
         """
         
-        repo = self.project.ServiceLocator.GetInstance(repository)
+        repo = self.ObjectRepository(repository)
         return repo.Count
     
     
@@ -534,25 +545,25 @@ class FLExProject (object):
         to the front and import from SIL.LCModel.
         """
 
-        repo = self.project.ServiceLocator.GetInstance(repository)
+        repo = self.ObjectRepository(repository)
         return iter(repo.AllInstances())
 
 
-    def Object(self, guid):
+    def Object(self, hvoOrGuid):
         """
         Returns the CmObject for the given Hvo or guid (str or System.Guid).
         Refer to .ClassName to determine the LCM class.
         """
-        if isinstance(guid, str):
+        if isinstance(hvoOrGuid, str):
             try:
-                guid = System.Guid(guid)
+                hvoOrGuid = System.Guid(hvoOrGuid)
             except System.FormatException:
-                raise FP_ParameterError("Invalid guid")
+                raise FP_ParameterError("Invalid parameter, hvoOrGuid")
                 
-        if isinstance(guid, (System.Guid, int)):
-            return self.project.ServiceLocator.GetObject(guid)
+        if isinstance(hvoOrGuid, (System.Guid, int)):
+            return self.project.ServiceLocator.GetObject(hvoOrGuid)
         else:
-            raise FP_ParameterError("guid must be an Hvo (int), System.Guid or str")
+            raise FP_ParameterError("hvoOrGuid must be an Hvo (int), System.Guid or str")
 
 
     # --- Lexicon ---

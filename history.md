@@ -6,6 +6,11 @@ None
 
 ## History
 
+### 1.2.5 - ?? 2025
+
++ When generating the list of projects, check for the fwdata file not 
+  just the directory existing.
+
 ### 1.2.4 - 14 Aug 2024
 
 + New function:

@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 FWCodeDir = None
 FWProjectsDir = None
+FWExecutable = None
 FWShortVersion = None
 FWLongVersion = None
 
@@ -89,6 +90,7 @@ def GetFWRegKey():
 def InitialiseFWGlobals():
     global FWCodeDir
     global FWProjectsDir
+    global FWExecutable
     global FWShortVersion
     global FWLongVersion
 
@@ -148,6 +150,8 @@ def InitialiseFWGlobals():
             logger.error(msg)
             raise Exception(msg)
 
+    FWExecutable = os.path.join(FWCodeDir, "FieldWorks.exe")
+    
     # Add the FW code directory to the search path for importing FW libs.
     sys.path.append(FWCodeDir)
 

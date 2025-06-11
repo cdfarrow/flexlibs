@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 from . import FLExInit
 from . import FLExLCM
 
+from subprocess import Popen, DETACHED_PROCESS
+from .. import FWExecutable
+
 import clr
 clr.AddReference("System")
 import System
@@ -131,12 +134,20 @@ class FP_ParameterError(FP_RuntimeError):
         FP_RuntimeError.__init__(self, msg)
         
 #-----------------------------------------------------------
+
 def AllProjectNames():
     """
     Returns a list of FieldWorks projects that are in the default location.
     """
     
     return FLExLCM.GetListOfProjects()
+
+#-----------------------------------------------------------
+
+def OpenProjectInFW(projectName):
+    
+    Popen([FWExecutable, '-db', projectName],
+          creationflags=DETACHED_PROCESS)
 
 #-----------------------------------------------------------
    

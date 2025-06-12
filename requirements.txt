@@ -2,7 +2,7 @@
 # pythonnet is needed because the sphinx builder imports FLExProject.py
 pytest
 sphinx
-pythonnet == 3.0.3
+pythonnet
 build
 wheel
 twine

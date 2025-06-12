@@ -10,11 +10,8 @@
 #             (ITsString doesn't work in IRONPython)
 #             FieldWorks Version 9
 #
-#   Copyright Craig Farrow, 2008 - 2022
+#   Copyright Craig Farrow, 2008 - 2024
 #
-
-from builtins import str
-from builtins import object
 
 import logging
 logger = logging.getLogger(__name__)
@@ -22,6 +19,9 @@ logger = logging.getLogger(__name__)
 # Initialise low-level FLEx data access
 from . import FLExInit
 from . import FLExLCM
+
+from subprocess import Popen, DETACHED_PROCESS
+from .. import FWExecutable
 
 import clr
 clr.AddReference("System")
@@ -35,6 +35,8 @@ from SIL.LCModel import (
                             WfiGlossTags,
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
+    ILexRefTypeRepository,
+    ICmSemanticDomain,
     TextTags,
     ITextRepository,
     IStTxtPara,
@@ -42,7 +44,7 @@ from SIL.LCModel import (
     IReversalIndex, IReversalIndexEntry, ReversalIndexEntryTags,
     IMoMorphType,
     SpecialWritingSystemCodes,
-    IMultiStringAccessor,
+    IMultiUnicode, IMultiString,
     LcmInvalidFieldException,
     LcmFileLockedException,
     LcmDataMigrationForbiddenException,
@@ -132,12 +134,20 @@ class FP_ParameterError(FP_RuntimeError):
         FP_RuntimeError.__init__(self, msg)
         
 #-----------------------------------------------------------
+
 def AllProjectNames():
     """
     Returns a list of FieldWorks projects that are in the default location.
     """
     
     return FLExLCM.GetListOfProjects()
+
+#-----------------------------------------------------------
+
+def OpenProjectInFW(projectName):
+    
+    Popen([FWExecutable, '-db', projectName],
+          creationflags=DETACHED_PROCESS)
 
 #-----------------------------------------------------------
    
@@ -147,7 +157,7 @@ class FLExProject (object):
     project by hiding some of the complexity of LCM.
     For functionality that isn't provided here, LCM data and methods
     can be used directly via FLExProject.project, FLExProject.lp and
-    FLExProject.lexDB; 
+    FLExProject.lexDB.
     However, for long term use, new methods should be added to this class.
 
     Usage::
@@ -155,22 +165,23 @@ class FLExProject (object):
         from SIL.LCModel.Core.KernelInterfaces import ITsString, ITsStrBldr
         from SIL.LCModel.Core.Text import TsStringUtils 
 
-        fp = FLExProject()
+        project = FLExProject()
         try:
-            fp.OpenProject("my project",
-                           writeEnabled = True/False)
+            project.OpenProject("my project",
+                                writeEnabled = True/False)
         except:
             #"Failed to open project"
-            del fp
+            del project
+            exit(1)
 
-        WSHandle = fp.WSHandle('en')
+        WSHandle = project.WSHandle('en')
 
         # Traverse the whole lexicon
-        for lexEntry in fp.LexiconAllEntries():
-            headword = fp.LexiconGetHeadword(lexEntry)
+        for lexEntry in project.LexiconAllEntries():
+            headword = project.LexiconGetHeadword(lexEntry)
 
             # Use get_String() and set_String() with text fields:
-            lexForm = lexEntry.LexemeFormOA                                            
+            lexForm = lexEntry.LexemeFormOA                              
             lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
             newValue = convert_headword(lexEntryValue)
             mkstr = TsStringUtils.MakeString(newValue, WSHandle) 
@@ -207,8 +218,7 @@ class FLExProject (object):
         """
         
         try:
-            self.project = FLExLCM.OpenProject(projectName, 
-                                               writeEnabled)
+            self.project = FLExLCM.OpenProject(projectName)
             
         except System.IO.FileNotFoundException as e:
             raise FP_FileNotFoundError(projectName, e)
@@ -259,7 +269,7 @@ class FLExProject (object):
                 # This must be called to mirror the call to BeginNonUndoableTask().
                 self.project.MainCacheAccessor.EndNonUndoableTask()
                 # Save all changes to disk. (EndNonUndoableTask)
-                usm = self.project.ServiceLocator.GetInstance(IUndoStackManager)
+                usm = self.ObjectRepository(IUndoStackManager)
                 usm.Save()                
                 # logger.debug("Done")
             try:
@@ -288,18 +298,24 @@ class FLExProject (object):
 
     def BestStr(self, stringObj):
         """
-        Generic string extraction function returning the best Analysis or Vernacular string.
+        Generic string function for MultiUnicode and MultiString 
+        objects, returning the best Analysis or Vernacular string.
         """
-        if not stringObj: raise FP_NullParameterError()
-        
-        s = ITsString(stringObj.BestAnalysisVernacularAlternative).Text
-        return u"" if s == "***" else s
-        
+
+        if isinstance(stringObj, (IMultiUnicode, IMultiString)):
+            s = stringObj.BestAnalysisVernacularAlternative.Text
+        else:
+            raise FP_ParameterError("BestStr: stringObj must be an IMultiUnicode or IMultiString")
+
+        return "" if s == "***" else s
+
+
     # --- LCM Utilities ---
     
-    def UnpackNestedPossibilityList(self, possibilityList, flat=False):
+    def UnpackNestedPossibilityList(self, possibilityList, objClass, flat=False):
         """
         Returns a nested or flat list of a Fieldworks Possibility List.
+        objClass is the class of object to cast the CmPossibility elements into.
         
         Return items are objects with properties/methods:
             - Hvo         - ID (value not the same across projects)
@@ -307,12 +323,12 @@ class FLExProject (object):
             - ToString()  - String representation.
         """
         for i in possibilityList:
-            yield i
+            yield objClass(i)
             if flat:
-                for j in self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, flat):
-                    yield j
+                for j in self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, objClass, flat):
+                    yield objClass(j)
             else:
-                l = list(self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, flat))
+                l = list(self.UnpackNestedPossibilityList(i.SubPossibilitiesOS, objClass, flat))
                 if l: yield l
     
     # --- Global: Writing Systems ---
@@ -441,16 +457,13 @@ class FLExProject (object):
         Returns a nested or flat list of all Semantic Domains defined
         in this project. The list is ordered.
         
-        Return items are objects with properties/methods:
-
-            - Hvo         - ID (value not the same across projects)
-            - Guid        - Global Unique ID (same across all projects)
-            - ToString()  - String representation of the semantic domain.
+        Return items are ICmSemanticDomain objects.
         """
 
         # Recursively extract the semantic domains
         return list(self.UnpackNestedPossibilityList(
                         self.lp.SemanticDomainListOA.PossibilitiesOS,
+                        ICmSemanticDomain,
                         flat))
 
 
@@ -461,15 +474,14 @@ class FLExProject (object):
         Builds a URL that can be used with os.startfile() to jump to the
         object in Fieldworks. This method currently supports:
 
-            - Lexical Entries
+            - Lexical Entries, Senses and any object within the lexicon
+            - Wordforms, Analyses and Wordform Glosses
             - Reversal Entries
-            - Wordforms
             - Texts
         """
 
         if isinstance(objectOrGuid, System.Guid):
-            objRepository = self.project.ServiceLocator.GetInstance(ICmObjectRepository)
-            flexObject = objRepository.GetObject(objectOrGuid)
+            flexObject = self.Object(objectOrGuid)
         else:
             flexObject = objectOrGuid
             
@@ -477,21 +489,21 @@ class FLExProject (object):
         try:
             flexObject.Guid
         except:
-            raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid or an object with attribute Guid")
+            raise FP_ParameterError("BuildGotoURL: objectOrGuid is neither System.Guid nor an object with attribute Guid")
 
         if flexObject.ClassID == ReversalIndexEntryTags.kClassId:
-            tool = u"reversalToolEditComplete"
+            tool = "reversalToolEditComplete"
 
         elif flexObject.ClassID in (WfiWordformTags.kClassId,
-                                WfiAnalysisTags.kClassId,
-                                WfiGlossTags.kClassId):
-            tool = u"Analyses"
+                                    WfiAnalysisTags.kClassId,
+                                    WfiGlossTags.kClassId):
+            tool = "Analyses"
             
         elif flexObject.ClassID == TextTags.kClassId:
-            tool = u"interlinearEdit"
+            tool = "interlinearEdit"
             
         else:
-            tool = u"lexiconEdit"                # Default tool is Lexicon Edit
+            tool = "lexiconEdit"                # Default tool is Lexicon Edit
 
         # Build the URL
         linkObj = FwAppArgs(self.project.ProjectId.Handle,
@@ -502,6 +514,18 @@ class FLExProject (object):
 
     # --- Generic Repository Access ---
 
+    def ObjectRepository(self, repository):        
+        """
+        Returns an object repository.
+        repository is specified by the interface class, such as:
+        
+            - ITextRepository
+            - ILexEntryRepository
+        """
+
+        return self.project.ServiceLocator.GetService(repository)
+
+
     def ObjectCountFor(self, repository):
         """
         Returns the number of objects in the given repository.
@@ -510,11 +534,12 @@ class FLExProject (object):
             - ITextRepository
             - ILexEntryRepository
 
-        (All repository names can be viewed by opening a project in
-        LCMBrowser, which can be launched via the Help menu.)
+        All repository names can be viewed by opening a project in
+        LCMBrowser, which can be launched via the Help menu. Add "I" 
+        to the front and import from SIL.LCModel.
         """
         
-        repo = self.project.ServiceLocator.GetInstance(repository)
+        repo = self.ObjectRepository(repository)
         return repo.Count
     
     
@@ -526,12 +551,32 @@ class FLExProject (object):
             - ITextRepository
             - ILexEntryRepository
             
-        Open a project in LCMBrowser to identify other repository names.
+        All repository names can be viewed by opening a project in
+        LCMBrowser, which can be launched via the Help menu. Add "I" 
+        to the front and import from SIL.LCModel.
         """
 
-        repo = self.project.ServiceLocator.GetInstance(repository)
+        repo = self.ObjectRepository(repository)
         return iter(repo.AllInstances())
-        
+
+
+    def Object(self, hvoOrGuid):
+        """
+        Returns the CmObject for the given Hvo or guid (str or System.Guid).
+        Refer to .ClassName to determine the LCM class.
+        """
+        if isinstance(hvoOrGuid, str):
+            try:
+                hvoOrGuid = System.Guid(hvoOrGuid)
+            except System.FormatException:
+                raise FP_ParameterError("Invalid parameter, hvoOrGuid")
+                
+        if isinstance(hvoOrGuid, (System.Guid, int)):
+            return self.project.ServiceLocator.GetObject(hvoOrGuid)
+        else:
+            raise FP_ParameterError("hvoOrGuid must be an Hvo (int), System.Guid or str")
+
+
     # --- Lexicon ---
 
     def LexiconNumberOfEntries(self):
@@ -546,22 +591,33 @@ class FLExProject (object):
           SIL.LCModel.ILexEntry, which contains:
               - HomographNumber :: integer
               - HomographForm :: string
-              - LexemeFormOA ::  SIL.LCModel.Ling.MoForm
+              - LexemeFormOA ::  SIL.LCModel.IMoForm
                    - Form :: SIL.LCModel.MultiUnicodeAccessor
                       - GetAlternative : Get String for given WS type
                       - SetAlternative : Set string for given WS type
-              - SensesOS :: Ordered collection of SIL.LCModel.Ling.LexSense 
+              - SensesOS :: Ordered collection of SIL.LCModel.ILexSense 
                   - Gloss :: SIL.LCModel.MultiUnicodeAccessor
                   - Definition :: SIL.LCModel.MultiStringAccessor
                   - SenseNumber :: string
-                  - ExamplesOS :: Ordered collection of LexExampleSentence
+                  - ExamplesOS :: Ordered collection of ILexExampleSentence
                       - Example :: MultiStringAccessor
         """
         
         return self.ObjectsIn(ILexEntryRepository)
 
 
-    #  (Writing system utilities)
+    def LexiconAllEntriesSorted(self):
+        """
+        Returns an iterator over all entries in the lexicon sorted by
+        the (lower-case) headword.
+        """
+        entries = [(str(e.HeadWord), e) for e in self.LexiconAllEntries()]
+
+        for h, e in sorted(entries, key=lambda x: x[0].lower()):
+            yield e
+        
+
+    #  Private writing system utilities
     
     def __WSHandle(self, languageTagOrHandle, defaultWS):
         if languageTagOrHandle == None:
@@ -587,7 +643,7 @@ class FLExProject (object):
     def __NormaliseLangTag(self, languageTag):
         return languageTag.replace("-", "_").lower()
     
-    #  (Vernacular WS fields)
+    #  Vernacular WS fields
     
     def LexiconGetHeadword(self, entry):
         """
@@ -603,9 +659,12 @@ class FLExProject (object):
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
+        if not entry.LexemeFormOA:
+            return ""
+            
         # MultiUnicodeAccessor
         form = ITsString(entry.LexemeFormOA.Form.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetCitationForm(self, entry, languageTagOrHandle=None):
@@ -617,7 +676,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(entry.CitationForm.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetPublishInCount(self, entry):
@@ -636,7 +695,7 @@ class FLExProject (object):
 
         # MultiUnicodeAccessor
         form = ITsString(pronunciation.Form.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
 
         
     def LexiconGetExample(self, example, languageTagOrHandle=None):
@@ -648,7 +707,7 @@ class FLExProject (object):
         
         # Example is a MultiString
         ex = ITsString(example.Example.get_String(WSHandle)).Text
-        return ex or u""
+        return ex or ""
 
         
     def LexiconSetExample(self, example, newString, languageTagOrHandle=None):
@@ -688,7 +747,7 @@ class FLExProject (object):
         
         # Translation is a MultiString
         tr = ITsString(translation.Translation.get_String(WSHandle)).Text
-        return tr or u""
+        return tr or ""
 
 
     def LexiconGetSenseNumber(self, sense):
@@ -704,7 +763,7 @@ class FLExProject (object):
         return senseNumber
 
 
-    #  (Analysis WS fields)
+    #  Analysis WS fields
 
     def LexiconGetSenseGloss(self, sense, languageTagOrHandle=None):
         """
@@ -715,7 +774,7 @@ class FLExProject (object):
         
         # MultiUnicodeAccessor
         gloss = ITsString(sense.Gloss.get_String(WSHandle)).Text
-        return gloss or u""
+        return gloss or ""
 
         
     def LexiconSetSenseGloss(self, sense, gloss, languageTagOrHandle=None):
@@ -747,10 +806,10 @@ class FLExProject (object):
         
         # Definition is a MultiString
         defn = ITsString(sense.Definition.get_String(WSHandle)).Text
-        return defn or u""
+        return defn or ""
 
-    #  (Non-string types)
     
+    #  Non-string types
     
     def LexiconGetSensePOS(self, sense):
         """
@@ -768,12 +827,12 @@ class FLExProject (object):
         ToString() and Hvo are available.
         """
 
-        ## SemanticDomainsRC::
-        ##      Count
-        ##      Add(Hvo)
-        ##      Contains(Hvo)
-        ##      Remove(Hvo)
-        ##      RemoveAll()
+        # Methods available for SemanticDomainsRC:
+        #      Count
+        #      Add(Hvo)
+        #      Contains(Hvo)
+        #      Remove(Hvo)
+        #      RemoveAll()
         
         return list(sense.SemanticDomainsRC)
 
@@ -782,10 +841,10 @@ class FLExProject (object):
         """
         Returns a count of the occurrences of the entry in the text corpus.
 
-        NOTE: As of Fieldworks 8.0.10 this calculation can be slightly off
-        (the same analysis in the same text segment is only counted once),
-        but is the same as reported in Fieldworks in the Number of Analyses
-        column. See LT-13997.
+        NOTE: This calculation can produce slightly different results to 
+        that shown in FieldWorks (where the same analysis in the same text 
+        segment is only counted once in some displays). See LT-13997 for 
+        more details.
         """
         
         # EntryAnalysesCount is not part of the interface ILexEntry, 
@@ -866,6 +925,7 @@ class FLExProject (object):
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         return fieldType in FLExLCM.CellarStringTypes
 
+
     def LexiconFieldIsMultiType(self, fieldID):
         """
         Returns True if the given field is a multi string type
@@ -917,10 +977,10 @@ class FLExProject (object):
                                          languageTagOrHandle)
 
         # (value.Text is None if the field is empty.)
-        if value and value.Text and value.Text != u"***":
+        if value and value.Text and value.Text != "***":
             return value.Text
         else:
-            return u""
+            return ""
 
         
     def LexiconSetFieldText(self, senseOrEntryOrHvo, fieldID, text, 
@@ -930,7 +990,7 @@ class FLExProject (object):
         Provided for use with custom fields.
 
         NOTE: writes the string in one writing system only (defaults
-        to the default analysis WS.)
+        to the default analysis WS).
 
         For normal fields the object can be used directly with
         set_String(). E.g.::
@@ -1014,7 +1074,7 @@ class FLExProject (object):
 
     def LexiconSetFieldInteger(self, senseOrEntryOrHvo, fieldID, integer):
         """
-        Set the integer value for the given entry/sense and field ID.
+        Sets the integer value for the given entry/sense and field ID.
         Provided for use with custom fields.
         """
 
@@ -1084,12 +1144,14 @@ class FLExProject (object):
                 return flid
         return None
 
+
     def LexiconGetEntryCustomFields(self):
         """
         Returns a list of the custom fields defined at Entry level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(LexEntryTags.kClassId))
+
 
     def LexiconGetSenseCustomFields(self):
         """
@@ -1098,6 +1160,7 @@ class FLExProject (object):
         """
         return list(self.__GetCustomFieldsOfType(LexSenseTags.kClassId))
 
+
     def LexiconGetEntryCustomFieldNamed(self, fieldName):
         """
         Return the entry-level field ID given its name.
@@ -1105,6 +1168,7 @@ class FLExProject (object):
         NOTE: fieldName is case-sensitive.
         """
         return self.__FindCustomField(LexEntryTags.kClassId, fieldName)
+
 
     def LexiconGetSenseCustomFieldNamed(self, fieldName):
         """
@@ -1115,6 +1179,59 @@ class FLExProject (object):
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)
 
         
+    # --- Lexical Relations ---
+    
+    def GetLexicalRelationTypes(self):
+        """
+        Returns an iterator over LexRefType objects, which define a 
+        type of lexical relation, such as Part-Whole.
+
+        Each LexRefType has:
+            - MembersOC: containing zero or more LexReference objects.
+            - MappingType: an enumeration defining the type of lexical relation.
+            
+        LexReference objects have:
+            - TargetsRS: the LexSense or LexEntry objects in the relation.
+            
+        For example:
+            for lrt in project.GetLexicalRelationTypes():
+                if (lrt.MembersOC.Count > 0):
+                    for lr in lrt.MembersOC:
+                        for target in lr.TargetsRS:
+                            if target.ClassName == "LexEntry":
+                                # LexEntry
+                            else: 
+                                # LexSense
+        """
+        return self.ObjectsIn(ILexRefTypeRepository)
+        
+    
+    # --- Publications ---
+    
+    def GetPublications(self):
+        """
+        Returns a list of the names of the publications defined in the
+        project.
+        """
+
+        return [self.BestStr(pub.Name) 
+                for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS]
+
+
+    def PublicationType(self, publicationName):
+        """
+        Returns the PublicationType object (a CmPossibility) for the
+        given publication name. (A list of publication names can be 
+        found using GetPublications().)
+        """
+
+        for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS:
+            if self.BestStr(pub.Name) == publicationName:
+                return pub
+        else:
+            return None
+
+
     # --- Reversal Indices ---
 
     def ReversalIndex(self, languageTag):
@@ -1126,11 +1243,11 @@ class FLExProject (object):
         languageTag = self.__NormaliseLangTag(languageTag)
         
         for ri in self.lexDB.ReversalIndexesOC:
-            #print ri.WritingSystem
             if self.__NormaliseLangTag(ri.WritingSystem) == languageTag:
                 return ri
 
         return None
+
 
     def ReversalEntries(self, languageTag):
         """
@@ -1144,6 +1261,7 @@ class FLExProject (object):
         else:
             return None
 
+
     def ReversalGetForm(self, entry, languageTagOrHandle=None):
         """
         Returns the citation form for the reversal entry in the Default
@@ -1152,11 +1270,12 @@ class FLExProject (object):
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
         form = ITsString(entry.ReversalForm.get_String(WSHandle)).Text
-        return form or u""
+        return form or ""
+
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
-        Set the Default Analysis reversal form for the given reversal entry:
+        Sets the Default Analysis reversal form for the given reversal entry:
         
             - form must be unicode.
             - languageTagOrHandle can be used to specify a different writing system.
@@ -1176,8 +1295,13 @@ class FLExProject (object):
     # --- Texts ---
 
     def TextsNumberOfTexts(self):
-        return self.ObjectCountFor(ITextRepository)
+        """
+        Returns the total number of texts in the project.
+        """
         
+        return self.ObjectCountFor(ITextRepository)
+
+
     def TextsGetAll(self, supplyName=True, supplyText=True):
         """
         A Generator that returns tuples of (Name, Text) where:
@@ -1201,7 +1325,7 @@ class FLExProject (object):
                 
                 if supplyName:
                     name = ITsString(t.Name.BestVernacularAnalysisAlternative).Text
-                    yield name, u"\n".join(content)        
+                    yield name, "\n".join(content)        
                 else:                
-                    yield u"\n".join(content)        
+                    yield "\n".join(content)        
 

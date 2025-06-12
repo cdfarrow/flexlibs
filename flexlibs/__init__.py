@@ -4,7 +4,7 @@
 #               via the Fieldworks Language and Culture Model (LCM).
 #----------------------------------------------------------------------------
 
-version = "1.2.2"
+version = "1.2.5"
 
 # Define exported classes, etc. at the top level of the package
 
@@ -16,6 +16,7 @@ from .code.FLExInit import (
 from .code.FLExGlobals import (
     FWCodeDir, 
     FWProjectsDir, 
+    FWExecutable,
     FWShortVersion, 
     FWLongVersion,
     APIHelpFile,
@@ -23,6 +24,7 @@ from .code.FLExGlobals import (
 
 from .code.FLExProject import (
     AllProjectNames,
+    OpenProjectInFW,
     FLExProject,
     FP_FileLockedError,
     FP_FileNotFoundError,

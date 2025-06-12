@@ -57,23 +57,25 @@ def GetListOfProjects():
     projectsPath = FwDirectoryFinder.ProjectsDirectory
     objs = os.listdir(str(projectsPath))
     projectList = []
-    for f in objs:
-        if os.path.isdir(os.path.join(projectsPath, f)):
-            projectList.append(f)
+    for dirname in objs:
+        # FieldWorks can leave ghost directories, so we test 
+        # for the fwdata file, not just the directory. (Issue #48)
+        suffix = LcmFileHelper.ksFwDataXmlFileExtension 
+        if os.path.isfile(os.path.join(projectsPath, 
+                                       dirname, 
+                                       dirname+suffix)):
+            projectList.append(dirname)
     return sorted(projectList)
 
 #-----------------------------------------------------------
 
-def OpenProject(projectName, writeEnabled = False):
+def OpenProject(projectName):
     """
     Open a FieldWorks project.
 
     projectName:
         - Either the full path including ".fwdata" suffix, or
         - The name only, opened from the default project location.
-
-    writeEnabled : (Awaiting FW support for a read-only mode so that
-                    FW doesn't have to be closed for read-only operations.)
     """
 
     projectFileName = LcmFileHelper.GetXmlDataFileName(projectName)

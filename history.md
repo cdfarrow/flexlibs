@@ -6,17 +6,39 @@ None
 
 ## History
 
+### 1.2.5 - 12 Jun 2025
+
++ When generating the list of projects, check that the fwdata file 
+  exists, not just the directory. [Issue #14]
++ New function:
+    + OpenProjectInFW(projectName)
+
+### 1.2.4 - 14 Aug 2024
+
++ New FLExProject function:
+    + ObjectRepository(repository)
+
+### 1.2.3 - 9 Jul 2024
+
++ GetAllSemanticDomains() returns ICmSemanticDomain objects
++ New FLExProject functions:
+    + Object(hvoOrGuid)
+    + LexiconAllEntriesSorted()
+    + GetLexicalRelationTypes()
+    + GetPublications()
+    + PublicationType(publicationName)
+
 ### 1.2.2 - 15 Nov 2023
 
 + Supports Python 3.8 - 3.12
-+ Supports FieldWorks 9.0.4 - 9.1.24
++ Supports FieldWorks 9.0.4 - 9.1.25
 
 ### 1.2.1 - 29 Aug 2023
 
 + Supports Python 3.6 - 3.11
 + Supports FieldWorks 9.0.4 - 9.1.22
-    
-+ New functions:
+
++ New FLExProject functions:
     + LexiconFieldIsMultiType() 
     + LexiconFieldIsAnyStringType()
     + LexiconGetSenseNumber()

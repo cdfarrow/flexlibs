@@ -157,7 +157,7 @@ class FLExProject (object):
     project by hiding some of the complexity of LCM.
     For functionality that isn't provided here, LCM data and methods
     can be used directly via FLExProject.project, FLExProject.lp and
-    FLExProject.lexDB; 
+    FLExProject.lexDB.
     However, for long term use, new methods should be added to this class.
 
     Usage::
@@ -841,10 +841,10 @@ class FLExProject (object):
         """
         Returns a count of the occurrences of the entry in the text corpus.
 
-        NOTE: As of Fieldworks 8.0.10 this calculation can be slightly off
-        (the same analysis in the same text segment is only counted once),
-        but is the same as reported in Fieldworks in the Number of Analyses
-        column. See LT-13997.
+        NOTE: This calculation can produce slightly different results to 
+        that shown in FieldWorks (where the same analysis in the same text 
+        segment is only counted once in some displays). See LT-13997 for 
+        more details.
         """
         
         # EntryAnalysesCount is not part of the interface ILexEntry, 

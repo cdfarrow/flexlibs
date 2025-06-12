@@ -42,7 +42,7 @@ FWLongVersion = None
 
 # (Double dirname() goes up a directory)
 APIHelpFile = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
-                           r"docs\flexlibsAPI\index.html")
+                           r"docs\flexlibsAPI\flexlibs.html")
 
 # ----------------------------------------------------------------
 # FieldWorks registry constants

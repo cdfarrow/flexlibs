@@ -6,12 +6,18 @@ None
 
 ## History
 
-### 1.2.5 - 12 Jun 2025
+### 1.2.6 - 26 Jun 2025
+
++ Supports Python 3.8 - 3.13
++ Supports FieldWorks 9.0.17 - 9.2.8
+
+### 1.2.5 - 13 Jun 2025
 
 + When generating the list of projects, check that the fwdata file 
   exists, not just the directory. [Issue #14]
 + New function:
     + OpenProjectInFW(projectName)
++ Tidied up the presentation of the API documentation.
 
 ### 1.2.4 - 14 Aug 2024
 

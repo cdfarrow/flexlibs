@@ -6,6 +6,10 @@ None
 
 ## History
 
+### 1.2.6 - 26 Jun 2025
+
++ Supports Python 3.8 - 3.13
++ Supports FieldWorks 9.0.17 - 9.2.8
 
 ### 1.2.5 - 13 Jun 2025
 

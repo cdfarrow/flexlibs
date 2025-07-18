@@ -36,6 +36,7 @@ from SIL.LCModel import (
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
     ILexRefTypeRepository,
+    ICmPossibilityRepository,
     ICmSemanticDomain,
     TextTags,
     ITextRepository,
@@ -305,7 +306,7 @@ class FLExProject (object):
         if isinstance(stringObj, (IMultiUnicode, IMultiString)):
             s = stringObj.BestAnalysisVernacularAlternative.Text
         else:
-            raise FP_ParameterError("BestStr: stringObj must be an IMultiUnicode or IMultiString")
+            raise FP_ParameterError("BestStr: stringObj must be IMultiUnicode or IMultiString")
 
         return "" if s == "***" else s
 
@@ -872,10 +873,26 @@ class FLExProject (object):
 
     # --- Lexicon: field functions ---
 
+    def __ValidatedHvo(self, senseOrEntryOrHvo, fieldID):
+        """
+        Internal function to check for valid parameters to lexicon functions.
+        """
+        if not senseOrEntryOrHvo: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
+
+        try:
+            hvo = senseOrEntryOrHvo.Hvo
+        except AttributeError:
+            hvo = senseOrEntryOrHvo
+        
+        return hvo
+
+
     def GetCustomFieldValue(self, senseOrEntryOrHvo, fieldID,
                             languageTagOrHandle=None):
         """
-        Returns the field value for String, MultiString and Integer fields.
+        Returns the field value for String, MultiString, Integer 
+        and List (both single and multiple) fields.
         Returns None for other field types.
         languageTagOrHandle only applies to MultiStrings; if None the
         best Analysis or Venacular string is returned. 
@@ -884,14 +901,8 @@ class FLExProject (object):
         languageTagOrHandle must be specified.
         """
 
-        if not senseOrEntryOrHvo: raise FP_NullParameterError()
-        if not fieldID: raise FP_NullParameterError()
-
-        try:
-            hvo = senseOrEntryOrHvo.Hvo
-        except AttributeError:
-            hvo = senseOrEntryOrHvo
-            
+        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
+        
         # Adapted from XDumper.cs::GetCustomFieldValue
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
@@ -911,6 +922,22 @@ class FLExProject (object):
         elif fieldType == CellarPropertyType.Integer:
             return self.project.DomainDataByFlid.get_IntProp(hvo, fieldID)
             
+        elif fieldType == CellarPropertyType.ReferenceAtom:
+            item = self.project.DomainDataByFlid.get_ObjectProp(hvo, fieldID)
+            poss = self.ObjectRepository(ICmPossibilityRepository).GetObject(item)
+            return poss.ShortName
+            
+        elif fieldType == CellarPropertyType.ReferenceCollection:
+            numItems = self.project.DomainDataByFlid.get_VecSize(hvo, fieldID)
+            getPossibilityObject = self.ObjectRepository(
+                                        ICmPossibilityRepository).GetObject
+            items = []
+            for i in range(numItems):
+                item = self.project.DomainDataByFlid.get_VecItem(hvo, fieldID, i)
+                poss = getPossibilityObject(item)
+                items.append(poss.ShortName)
+            return items
+
         return None
 
         
@@ -969,9 +996,6 @@ class FLExProject (object):
             lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
         """
         
-        if not senseOrEntryOrHvo: raise FP_NullParameterError()
-        if not fieldID: raise FP_NullParameterError()
-
         value = self.GetCustomFieldValue(senseOrEntryOrHvo, 
                                          fieldID,
                                          languageTagOrHandle)
@@ -1002,15 +1026,9 @@ class FLExProject (object):
 
         if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        if not senseOrEntryOrHvo: raise FP_NullParameterError()
-        if not fieldID: raise FP_NullParameterError()
+        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
         
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
-
-        try:
-            hvo = senseOrEntryOrHvo.Hvo
-        except AttributeError:
-            hvo = senseOrEntryOrHvo
 
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
@@ -1043,13 +1061,7 @@ class FLExProject (object):
 
         if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        if not senseOrEntryOrHvo: raise FP_NullParameterError()
-        if not fieldID: raise FP_NullParameterError()
-        
-        try:
-            hvo = senseOrEntryOrHvo.Hvo
-        except AttributeError:
-            hvo = senseOrEntryOrHvo
+        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
 
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
@@ -1080,13 +1092,7 @@ class FLExProject (object):
 
         if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        if not senseOrEntryOrHvo: raise FP_NullParameterError()
-        if not fieldID: raise FP_NullParameterError()
-        
-        try:
-            hvo = senseOrEntryOrHvo.Hvo
-        except AttributeError:
-            hvo = senseOrEntryOrHvo
+        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
 
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         if CellarPropertyType(mdc.GetFieldType(fieldID)) != CellarPropertyType.Integer:

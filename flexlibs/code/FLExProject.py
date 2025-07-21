@@ -893,7 +893,8 @@ class FLExProject (object):
         """
         Returns the field value for String, MultiString, Integer 
         and List (both single and multiple) fields.
-        Returns None for other field types.
+        Raises FP_ParameterError for other field types.
+        
         languageTagOrHandle only applies to MultiStrings; if None the
         best Analysis or Venacular string is returned. 
         
@@ -938,7 +939,7 @@ class FLExProject (object):
                 items.append(poss.ShortName)
             return items
 
-        return None
+        raise FP_ParameterError("GetCustomFieldValue: field is not a supported type")
 
         
     def LexiconFieldIsStringType(self, fieldID):

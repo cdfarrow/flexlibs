@@ -37,6 +37,7 @@ from SIL.LCModel import (
                             WfiMorphBundleTags,
     ILexRefTypeRepository,
     ICmPossibilityRepository,
+    ICmPossibilityList,
     ICmSemanticDomain,
     TextTags,
     ITextRepository,
@@ -903,7 +904,7 @@ class FLExProject (object):
         """
 
         hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
-        
+
         # Adapted from XDumper.cs::GetCustomFieldValue
         mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
@@ -911,7 +912,7 @@ class FLExProject (object):
         if fieldType in FLExLCM.CellarStringTypes:
             return ITsString(self.project.DomainDataByFlid.\
                              get_StringProp(hvo, fieldID))
-                             
+
         elif fieldType in FLExLCM.CellarMultiStringTypes:
             mua = self.project.DomainDataByFlid.get_MultiStringProp(hvo, fieldID)
             if languageTagOrHandle:
@@ -922,12 +923,12 @@ class FLExProject (object):
 
         elif fieldType == CellarPropertyType.Integer:
             return self.project.DomainDataByFlid.get_IntProp(hvo, fieldID)
-            
+
         elif fieldType == CellarPropertyType.ReferenceAtom:
             item = self.project.DomainDataByFlid.get_ObjectProp(hvo, fieldID)
             poss = self.ObjectRepository(ICmPossibilityRepository).GetObject(item)
             return poss.ShortName
-            
+
         elif fieldType == CellarPropertyType.ReferenceCollection:
             numItems = self.project.DomainDataByFlid.get_VecSize(hvo, fieldID)
             getPossibilityObject = self.ObjectRepository(
@@ -941,7 +942,7 @@ class FLExProject (object):
 
         raise FP_ParameterError("GetCustomFieldValue: field is not a supported type")
 
-        
+
     def LexiconFieldIsStringType(self, fieldID):
         """
         Returns True if the given field is a simple string type suitable 
@@ -1127,7 +1128,36 @@ class FLExProject (object):
                                  newText)
 
         return
-    
+
+
+    def LexiconGetPossibilityList(self, senseOrEntry, fieldID):
+
+        if not senseOrEntry: raise FP_NullParameterError()
+        if not fieldID: raise FP_NullParameterError()
+
+        mdc = IFwMetaDataCacheManaged(self.project.MetaDataCacheAccessor)
+        fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
+        if fieldType not in (CellarPropertyType.ReferenceAtom, 
+                             CellarPropertyType.ReferenceCollection):
+            raise FP_ParameterError("LexiconGetPossibilityList: field must be a List type")
+
+        pList = senseOrEntry.ReferenceTargetOwner(fieldID)
+
+        return ICmPossibilityList(pList)
+
+
+    def LexiconSetListFieldAtomic(self, senseOrEntryOrHvo, fieldID, possibilityOrHvo):
+
+        if not self.writeEnabled: raise FP_ReadOnlyError()
+
+        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
+        try:
+            possHvo = possibilityOrHvo.Hvo
+        except AttributeError:
+            possHvo = possibilityOrHvo
+        
+        self.project.DomainDataByFlid.SetObjProp(hvo, fieldID, possHvo)
+
 
     # --- Lexicon: Custom fields ---
     

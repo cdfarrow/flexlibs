@@ -47,6 +47,7 @@ from SIL.LCModel import (
     IMoMorphType,
     SpecialWritingSystemCodes,
     IMultiUnicode, IMultiString,
+    LcmInvalidClassException,
     LcmInvalidFieldException,
     LcmFileLockedException,
     LcmDataMigrationForbiddenException,
@@ -874,6 +875,30 @@ class FLExProject (object):
 
     # --- Lexicon: field functions ---
 
+    def GetFieldID(self, className, fieldName):
+        """
+        Return the FieldID ('flid') for the given field of an LCM class.
+        className and fieldName are strings, where fieldName may omit 
+        the type suffix (e.g. 'OS'), and are case-sensitive.
+        For example, find the FieldID for Academic Domains with:
+            GetFieldID("LexSense", "DomainTypes")
+        """
+
+        mdc = self.project.MetaDataCacheAccessor
+
+        if fieldName[-2:] in ("OA", "OS", "OC", "RA", "RS", "RC"):
+            fieldName = fieldName[:-2]
+
+        try:
+            # True=include base classes if needed.
+            flid = mdc.GetFieldId(className, fieldName, True) 
+        except (LcmInvalidFieldException, 
+                LcmInvalidClassException) as e:
+            # "from None" avoids confusion of both exceptions being reported.
+            raise FP_ParameterError(e.Message) from None
+        return flid
+ 
+ 
     def __ValidatedHvo(self, senseOrEntryOrHvo, fieldID):
         """
         Internal function to check for valid parameters to lexicon functions.
@@ -1130,7 +1155,14 @@ class FLExProject (object):
         return
 
 
-    def LexiconGetPossibilityList(self, senseOrEntry, fieldID):
+    # --- Lexicon: list field functions ---
+
+    def ListFieldPossibilityList(self, senseOrEntry, fieldID):
+        """
+        Return the ICmPossibilityList object for the given list field.
+        Raises an exception if the field is not a list (single/Atomic
+        or multiple/Collection)
+        """
 
         if not senseOrEntry: raise FP_NullParameterError()
         if not fieldID: raise FP_NullParameterError()
@@ -1139,24 +1171,74 @@ class FLExProject (object):
         fieldType = CellarPropertyType(mdc.GetFieldType(fieldID))
         if fieldType not in (CellarPropertyType.ReferenceAtom, 
                              CellarPropertyType.ReferenceCollection):
-            raise FP_ParameterError("LexiconGetPossibilityList: field must be a List type")
-
-        pList = senseOrEntry.ReferenceTargetOwner(fieldID)
-
-        return ICmPossibilityList(pList)
+            raise FP_ParameterError("ListFieldPossibilityList: field must be a List type")
+        return ICmPossibilityList(senseOrEntry.ReferenceTargetOwner(fieldID))
 
 
-    def LexiconSetListFieldAtomic(self, senseOrEntryOrHvo, fieldID, possibilityOrHvo):
+    def ListFieldPossibilities(self, senseOrEntry, fieldID):
+        """
+        Returns the PossibilitiesOS for the given list field. This
+        is a list of ICmPossibility objects.
+        Raises an exception if the field is not a list (single/Atomic
+        or multiple/Collection)
+        
+        Note: this returns the top-level CmPossibility objects. Subitems 
+        can be found via the SubPossibilitiesOS attribute. Alternatively, 
+        a flat list of all possible options can be obtained with:
+            options = project.UnpackNestedPossibilityList(possibilities,
+                                                          str, 
+                                                          True)
+        """
+
+        pList = self.ListFieldPossibilityList(senseOrEntry, fieldID)
+        return pList.PossibilitiesOS
+
+
+    def ListFieldLookup(self, senseOrEntry, fieldID, value):
+        """
+        Looks up the value (a string) in the PossibilityList for the
+        given field.
+        Returns the CmPossibility object, or None if it can't be found.
+        """
+        
+        pList = self.ListFieldPossibilityList(senseOrEntry, fieldID)
+        return pList.FindPossibilityByName(pList.PossibilitiesOS,
+                                           value,
+                                           self.lp.DefaultAnalysisWritingSystem.Handle)
+
+
+    def LexiconSetListFieldSingle(self, 
+                                  senseOrEntry, 
+                                  fieldID, 
+                                  possibilityOrString):
+        """
+        Sets the value for a 'single' (Atomic) list field.
+        possibilityOrString can be a CmPossibility object, or a string.
+        A string value can be the full name or the abbreviation (case-sensitive).
+        
+        Use ListFieldPossibilities() to find the valid values for the list.
+        """
 
         if not self.writeEnabled: raise FP_ReadOnlyError()
 
-        hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
-        try:
-            possHvo = possibilityOrHvo.Hvo
-        except AttributeError:
-            possHvo = possibilityOrHvo
+        hvo = self.__ValidatedHvo(senseOrEntry, fieldID)
         
-        self.project.DomainDataByFlid.SetObjProp(hvo, fieldID, possHvo)
+        if type(possibilityOrString) is str:
+            possibility = self.ListFieldLookup(senseOrEntry, 
+                                               fieldID, 
+                                               possibilityOrString)
+            if not possibility:
+                raise FP_ParameterError(f"'{possibilityOrString}' not found in the Possibility list")
+        else:
+            try:
+                if possibilityOrString.ClassName == "CmPossibility":
+                    possibility = possibilityOrString
+                else:
+                    raise AttributeError
+            except AttributeError:
+                raise FP_ParameterError("possibilityOrString must be a string or CmPossibility")
+
+        self.project.DomainDataByFlid.SetObjProp(hvo, fieldID, possibility.Hvo)
 
 
     # --- Lexicon: Custom fields ---

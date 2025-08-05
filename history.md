@@ -11,7 +11,13 @@ None
 + Supports Python 3.8 - 3.13
 + Supports FieldWorks 9.0.17 - 9.2.10
 
-+ Added support for Lists (single or multiple) in GetCustomFieldValue()
++ FLExProject functions:
+    + Added GetFieldID()
+    + Added support for Lists (single or multiple) in GetCustomFieldValue()
+    + Added ListFieldPossibilityList()
+    + Added ListFieldPossibilities()
+    + Added ListFieldLookup()
+    + Added LexiconSetListFieldSingle() 
 
 ### 1.2.6 - 26 Jun 2025
 

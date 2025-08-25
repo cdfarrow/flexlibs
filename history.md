@@ -18,6 +18,7 @@ None
     + Added ListFieldPossibilities()
     + Added ListFieldLookup()
     + Added LexiconSetListFieldSingle() 
+    + Added LexiconSetListFieldMultiple() 
 
 ### 1.2.6 - 26 Jun 2025
 

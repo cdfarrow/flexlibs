@@ -1159,7 +1159,7 @@ class FLExProject (object):
 
     def ListFieldPossibilityList(self, senseOrEntry, fieldID):
         """
-        Return the ICmPossibilityList object for the given list field.
+        Return the CmPossibilityList object for the given list field.
         Raises an exception if the field is not a list (single/Atomic
         or multiple/Collection)
         """
@@ -1178,7 +1178,7 @@ class FLExProject (object):
     def ListFieldPossibilities(self, senseOrEntry, fieldID):
         """
         Returns the PossibilitiesOS for the given list field. This
-        is a list of ICmPossibility objects.
+        is a list of CmPossibility objects.
         Raises an exception if the field is not a list (single/Atomic
         or multiple/Collection)
         
@@ -1202,9 +1202,10 @@ class FLExProject (object):
         """
         
         pList = self.ListFieldPossibilityList(senseOrEntry, fieldID)
+        wsa = self.lp.DefaultAnalysisWritingSystem.Handle
         return pList.FindPossibilityByName(pList.PossibilitiesOS,
                                            value,
-                                           self.lp.DefaultAnalysisWritingSystem.Handle)
+                                           wsa)
 
 
     def LexiconSetListFieldSingle(self, 
@@ -1217,6 +1218,13 @@ class FLExProject (object):
         A string value can be the full name or the abbreviation (case-sensitive).
         
         Use ListFieldPossibilities() to find the valid values for the list.
+        
+        Note: this function is primarily for use with custom fields, 
+        since regular list field values can be assigned directly. E.g.:
+             status_poss = project.ListFieldPossibilities(
+                               sense, 
+                               project.GetFieldID("LexSense", "Status"))
+             sense.StatusRA = status_poss[3]    # Tentative
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError()
@@ -1238,7 +1246,63 @@ class FLExProject (object):
             except AttributeError:
                 raise FP_ParameterError("possibilityOrString must be a string or CmPossibility")
 
-        self.project.DomainDataByFlid.SetObjProp(hvo, fieldID, possibility.Hvo)
+        self.project.DomainDataByFlid.SetObjProp(hvo, 
+                                                 fieldID, 
+                                                 possibility.Hvo)
+
+
+    def LexiconSetListFieldMultiple(self, 
+                                    senseOrEntry, 
+                                    fieldID,
+                                    listOfValues):
+        """
+        Sets the value(s) for a 'multiple' (Collection) list field.
+        listOfValues can be a list of:
+            - CmPossibility objects; or
+            - CmPossibility hvos; or
+            - str (either the full name or the abbreviation; 
+                   case-sensitive).
+
+        Use ListFieldPossibilities() to find the valid values for the list.
+        
+        Note: this function is primarily for use with custom fields, 
+        since regular fields can use the Add(), Remove() and Clear() 
+        methods of the field itself (see LcmReferenceCollection).
+        """
+        
+        if not self.writeEnabled: raise FP_ReadOnlyError()
+
+        hvo = self.__ValidatedHvo(senseOrEntry, fieldID)
+        
+        if not listOfValues:
+            raise FP_ParameterError("LexiconSetListFieldMultiple: listOfValues cannot be empty or None")
+
+        if type(listOfValues[0]) is int:
+            hvoList = listOfValues
+        else:
+            if type(listOfValues[0]) is str:
+                possibilities = [self.ListFieldLookup(senseOrEntry,
+                                                      fieldID, 
+                                                      s)
+                                 for s in listOfValues]
+                if not all(possibilities):
+                    raise FP_ParameterError("LexiconSetListFieldMultiple: one or more values not valid.")
+            else:
+                possibilities = listOfValues
+
+            try:
+                hvoList = [p.Hvo for p in possibilities]
+            except AttributeError:
+                raise FP_ParameterError("LexiconSetListFieldMultiple: listOfValues is not valid.")
+
+        # Get the count of current items in the field
+        ddbf = self.project.DomainDataByFlid
+        numItems = ddbf.get_VecSize(senseOrEntry.Hvo, fieldID)
+
+        # Replace the current items with the new list
+        ddbf.Replace(senseOrEntry.Hvo, fieldID,
+                     0, numItems,
+                     hvoList, len(hvoList))
 
 
     # --- Lexicon: Custom fields ---

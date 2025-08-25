@@ -6,10 +6,10 @@ None
 
 ## History
 
-### 1.2.7 - 4 Aug 2025
+### 1.2.7 - 25 Aug 2025
 
 + Supports Python 3.8 - 3.13
-+ Supports FieldWorks 9.0.17 - 9.2.10
++ Supports FieldWorks 9.0.17 - 9.3.1
 
 + FLExProject functions:
     + Added GetFieldID()

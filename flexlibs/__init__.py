@@ -4,7 +4,7 @@
 #               via the Fieldworks Language and Culture Model (LCM).
 #----------------------------------------------------------------------------
 
-version = "1.2.7"
+version = "1.2.7.1"
 
 # Define exported classes, etc. at the top level of the package
 

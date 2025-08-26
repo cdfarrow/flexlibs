@@ -951,6 +951,8 @@ class FLExProject (object):
 
         elif fieldType == CellarPropertyType.ReferenceAtom:
             item = self.project.DomainDataByFlid.get_ObjectProp(hvo, fieldID)
+            if not item:
+                return ""
             poss = self.ObjectRepository(ICmPossibilityRepository).GetObject(item)
             return poss.ShortName
 

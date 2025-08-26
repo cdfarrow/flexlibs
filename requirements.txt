@@ -4,5 +4,5 @@ pytest
 sphinx
 pythonnet >=3.0.3
 build
-wheel
+setuptools
 twine

@@ -40,8 +40,8 @@ FOR %%C IN ("Init"
     @REM Build the Sphinx docs
     sphinx-build docs/sphinx flexlibs/docs/flexlibsAPI
 
-    @REM Build the wheel
-    %PYTHON% -m build -w
+    @REM Build the wheel with setuptools
+    %PYTHON% -m build -w -nx
     
     @REM Check for package errors
     %PYTHON% -m twine check .\dist\*

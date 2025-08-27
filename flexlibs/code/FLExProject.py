@@ -1253,6 +1253,22 @@ class FLExProject (object):
                                                  possibility.Hvo)
 
 
+    def LexiconClearListFieldSingle(self, 
+                                    senseOrEntry, 
+                                    fieldID):
+        """
+        Clears the value for a 'single' (Atomic) list field.
+        """
+
+        if not self.writeEnabled: raise FP_ReadOnlyError()
+
+        hvo = self.__ValidatedHvo(senseOrEntry, fieldID)
+        
+        self.project.DomainDataByFlid.SetObjProp(hvo, 
+                                                 fieldID, 
+                                                 0)
+
+
     def LexiconSetListFieldMultiple(self, 
                                     senseOrEntry, 
                                     fieldID,

@@ -6,6 +6,11 @@ None
 
 ## History
 
+### 1.2.8 - TBD
+
++ FLExProject functions:
+    + Added LexiconClearListFieldSingle() 
+
 ### 1.2.7 - 25 Aug 2025
 
 + Supports Python 3.8 - 3.13

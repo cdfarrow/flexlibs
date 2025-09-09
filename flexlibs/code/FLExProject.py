@@ -161,8 +161,8 @@ class FLExProject (object):
     This class provides convenience methods for accessing a FieldWorks 
     project by hiding some of the complexity of LCM.
     For functionality that isn't provided here, LCM data and methods
-    can be used directly via FLExProject.project, FLExProject.lp and
-    FLExProject.lexDB.
+    can be used directly via `FLExProject.project`, `FLExProject.lp` and
+    `FLExProject.lexDB`.
     However, for long term use, new methods should be added to this class.
 
     Usage::
@@ -198,7 +198,7 @@ class FLExProject (object):
                     projectName, 
                     writeEnabled = False):
         """
-        Open a project. The project must be closed with CloseProject() to 
+        Open a project. The project must be closed with `CloseProject()` to 
         save any changes, and release the lock.
 
         projectName:
@@ -207,12 +207,12 @@ class FLExProject (object):
             
         writeEnabled: 
             Enables changes to be written to the project, which will be
-            saved on a call to CloseProject(). 
+            saved on a call to `CloseProject()`. 
             LCM will raise an exception if changes are attempted without 
             opening the project in this mode.
             
         Note: 
-            A call to OpenProject() may fail with a FP_FileLockedError
+            A call to `OpenProject()` may fail with a `FP_FileLockedError`
             exception if the project is open in Fieldworks (or another 
             application).
             To avoid this, project sharing can be enabled within the 
@@ -303,8 +303,8 @@ class FLExProject (object):
 
     def BestStr(self, stringObj):
         """
-        Generic string function for MultiUnicode and MultiString 
-        objects, returning the best Analysis or Vernacular string.
+        Generic string function for `MultiUnicode` and `MultiString` 
+        objects, returning the best analysis or vernacular string.
         """
 
         if isinstance(stringObj, (IMultiUnicode, IMultiString)):
@@ -319,13 +319,13 @@ class FLExProject (object):
     
     def UnpackNestedPossibilityList(self, possibilityList, objClass, flat=False):
         """
-        Returns a nested or flat list of a Fieldworks Possibility List.
-        objClass is the class of object to cast the CmPossibility elements into.
+        Returns a nested or flat list of a Fieldworks possibility list.
+        `objClass` is the class of object to cast the `CmPossibility` elements into.
         
         Return items are objects with properties/methods:
-            - Hvo         - ID (value not the same across projects)
-            - Guid        - Global Unique ID (same across all projects)
-            - ToString()  - String representation.
+            - `Hvo`         - ID (value not the same across projects)
+            - `Guid`        - Global Unique ID (same across all projects)
+            - `ToString()`  - String representation.
         """
         for i in possibilityList:
             yield objClass(i)
@@ -356,9 +356,9 @@ class FLExProject (object):
         
     def GetWritingSystems(self):
         """
-        Returns the Writing Systems that are active in this project as a
+        Returns the writing systems that are active in this project as a
         list of tuples: (Name, Language-tag, Handle, IsVernacular).
-        Use the Language-tag when specifying Writing System to other
+        Use the Language-tag when specifying writing system to other
         functions.
         """
 
@@ -381,9 +381,10 @@ class FLExProject (object):
         
     def WSUIName(self, languageTagOrHandle):
         """
-        Returns the UI name of the writing system for the given languageTag or Handle.
+        Returns the UI name of the writing system for the given language tag
+        or handle.
         Ignores case and '-'/'_' differences.
-        Returns None if the language tag is not found.
+        Returns `None` if the language tag is not found.
         """
 
         if isinstance(languageTagOrHandle, str):
@@ -406,9 +407,9 @@ class FLExProject (object):
             
     def WSHandle(self, languageTag):
         """
-        Returns the Handle of the writing system for the given languageTag.
+        Returns the handle of the writing system for `languageTag`.
         Ignores case and '-'/'_' differences.
-        Returns None if the language tag is not found.
+        Returns `None` if the language tag is not found.
         """
         
         languageTag = self.__NormaliseLangTag(languageTag)
@@ -429,7 +430,7 @@ class FLExProject (object):
             
     def GetDefaultVernacularWS(self):
         """
-        Returns the Default Vernacular Writing System: (Language-tag, Name)
+        Returns the default vernacular writing system: (Language-tag, Name)
         """
         return (self.lp.DefaultVernacularWritingSystem.Id,
                 self.lp.DefaultVernacularWritingSystem.DisplayLabel)
@@ -437,7 +438,7 @@ class FLExProject (object):
     
     def GetDefaultAnalysisWS(self):
         """
-        Returns the Default Analysis Writing System: (Language-tag, Name)
+        Returns the default analysis writing system: (Language-tag, Name)
         """
         return (self.lp.DefaultAnalysisWritingSystem.Id,
                 self.lp.DefaultAnalysisWritingSystem.DisplayLabel)
@@ -450,7 +451,7 @@ class FLExProject (object):
     
     def GetPartsOfSpeech(self):
         """
-        Returns a list of the Parts of Speech defined in this project.
+        Returns a list of the parts of speech defined in this project.
         """
         pos = self.lp.AllPartsOfSpeech
         
@@ -459,10 +460,10 @@ class FLExProject (object):
         
     def GetAllSemanticDomains(self, flat=False):
         """
-        Returns a nested or flat list of all Semantic Domains defined
+        Returns a nested or flat list of all semantic domains defined
         in this project. The list is ordered.
         
-        Return items are ICmSemanticDomain objects.
+        Return items are `ICmSemanticDomain` objects.
         """
 
         # Recursively extract the semantic domains
@@ -476,7 +477,7 @@ class FLExProject (object):
     
     def BuildGotoURL(self, objectOrGuid):
         """
-        Builds a URL that can be used with os.startfile() to jump to the
+        Builds a URL that can be used with `os.startfile()` to jump to the
         object in Fieldworks. This method currently supports:
 
             - Lexical Entries, Senses and any object within the lexicon
@@ -522,10 +523,10 @@ class FLExProject (object):
     def ObjectRepository(self, repository):        
         """
         Returns an object repository.
-        repository is specified by the interface class, such as:
+        `repository` is specified by the interface class, such as:
         
-            - ITextRepository
-            - ILexEntryRepository
+            - `ITextRepository`
+            - `ILexEntryRepository`
         """
 
         return self.project.ServiceLocator.GetService(repository)
@@ -533,15 +534,15 @@ class FLExProject (object):
 
     def ObjectCountFor(self, repository):
         """
-        Returns the number of objects in the given repository.
-        repository is specified by the interface class, such as:
+        Returns the number of objects in `repository`.
+        `repository` is specified by the interface class, such as:
         
-            - ITextRepository
-            - ILexEntryRepository
+            - `ITextRepository`
+            - `ILexEntryRepository`
 
         All repository names can be viewed by opening a project in
         LCMBrowser, which can be launched via the Help menu. Add "I" 
-        to the front and import from SIL.LCModel.
+        to the front and import from `SIL.LCModel`.
         """
         
         repo = self.ObjectRepository(repository)
@@ -550,15 +551,15 @@ class FLExProject (object):
     
     def ObjectsIn(self, repository):
         """
-        Returns an iterator over all the objects in the given repository.
-        repository is specified by the interface class, such as:
+        Returns an iterator over all the objects in `repository`.
+        `repository` is specified by the interface class, such as:
         
-            - ITextRepository
-            - ILexEntryRepository
+            - `ITextRepository`
+            - `ILexEntryRepository`
             
         All repository names can be viewed by opening a project in
         LCMBrowser, which can be launched via the Help menu. Add "I" 
-        to the front and import from SIL.LCModel.
+        to the front and import from `SIL.LCModel`.
         """
 
         repo = self.ObjectRepository(repository)
@@ -567,8 +568,8 @@ class FLExProject (object):
 
     def Object(self, hvoOrGuid):
         """
-        Returns the CmObject for the given Hvo or guid (str or System.Guid).
-        Refer to .ClassName to determine the LCM class.
+        Returns the `CmObject` for the given Hvo or guid (`str` or `System.Guid`).
+        Refer to `.ClassName` to determine the LCM class.
         """
         if isinstance(hvoOrGuid, str):
             try:
@@ -652,15 +653,15 @@ class FLExProject (object):
     
     def LexiconGetHeadword(self, entry):
         """
-        Returns the headword for the entry
+        Returns the headword for `entry`.
         """
         return entry.HeadWord.Text
 
         
     def LexiconGetLexemeForm(self, entry, languageTagOrHandle=None):
         """
-        Returns the lexeme form for the entry in the Default Vernacular WS
-        or other WS as specified by languageTagOrHandle.
+        Returns the lexeme form for `entry` in the default vernacular WS
+        or other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
@@ -674,9 +675,9 @@ class FLExProject (object):
 
     def LexiconSetLexemeForm(self, entry, form, languageTagOrHandle=None):
         """
-        Set the Lexeme Form for the given entry:
-            - form is the new lexeme form string.
-            - languageTagOrHandle specifies a non-default writing system.
+        Set the lexeme form for `entry`:
+            - `form` is the new lexeme form string.
+            - `languageTagOrHandle` specifies a non-default writing system.
         """
         if not self.writeEnabled: raise FP_ReadOnlyError
         
@@ -691,8 +692,8 @@ class FLExProject (object):
         
     def LexiconGetCitationForm(self, entry, languageTagOrHandle=None):
         """
-        Returns the citation form for the entry in the Default Vernacular WS
-        or other WS as specified by languageTagOrHandle.
+        Returns the citation form for `entry` in the default vernacular WS
+        or other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
@@ -703,15 +704,16 @@ class FLExProject (object):
         
     def LexiconGetPublishInCount(self, entry):
         """
-        Returns the PublishIn Count
+        Returns the number of dictionaries that `entry` is configured 
+        to be published in.
         """
         return entry.PublishIn.Count
 
         
     def LexiconGetPronunciation(self, pronunciation, languageTagOrHandle=None):
         """
-        Returns the Form for the Pronunciation in the Default Vernacular WS
-        or other WS as specified by languageTagOrHandle.
+        Returns the form for `pronunciation` in the default vernacular WS
+        or other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
 
@@ -722,8 +724,8 @@ class FLExProject (object):
         
     def LexiconGetExample(self, example, languageTagOrHandle=None):
         """
-        Returns the example text in the Default Vernacular WS or
-        other WS as specified by languageTagOrHandle.
+        Returns the example text in the default vernacular WS or
+        other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
         
@@ -734,9 +736,9 @@ class FLExProject (object):
         
     def LexiconSetExample(self, example, newString, languageTagOrHandle=None):
         """
-        Set the Default Vernacular string for the given Example:
-            - newString is the new string value.
-            - languageTagOrHandle specifies a non-default writing system.
+        Set the default vernacular string for `example`:
+            - `newString` is the new string value.
+            - `languageTagOrHandle` specifies a non-default writing system.
 
         NOTE: using this function will lose any formatting that might
         have been present in the example string.
@@ -755,8 +757,8 @@ class FLExProject (object):
         
     def LexiconGetExampleTranslation(self, translation, languageTagOrHandle=None):
         """
-        Returns the translation of an example in the Default Analysis WS or
-        other WS as specified by languageTagOrHandle.
+        Returns the translation of an example in the default analysis WS or
+        other WS as specified by `languageTagOrHandle`.
 
         NOTE: Analysis language translations of example sentences are
         stored as a collection (list). E.g.::
@@ -774,7 +776,7 @@ class FLExProject (object):
     def LexiconGetSenseNumber(self, sense):
         """
         Returns the sense number for the sense. (This is not available 
-        directly from ILexSense.)
+        directly from `ILexSense`.)
         """
         
         # SenseNumber is not part of the interface ILexSense, but it 
@@ -788,8 +790,8 @@ class FLExProject (object):
 
     def LexiconGetSenseGloss(self, sense, languageTagOrHandle=None):
         """
-        Returns the gloss for the sense in the Default Analysis WS or
-        other WS as specified by languageTagOrHandle.
+        Returns the gloss for the sense in the default analysis WS or
+        other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
@@ -800,9 +802,9 @@ class FLExProject (object):
         
     def LexiconSetSenseGloss(self, sense, gloss, languageTagOrHandle=None):
         """
-        Set the Default Analysis gloss for the given sense:
-            - gloss is the new gloss string.
-            - languageTagOrHandle specifies a non-default writing system.
+        Set the default analysis gloss for `sense`:
+            - `gloss` is the new gloss string.
+            - `languageTagOrHandle` specifies a non-default writing system.
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError
@@ -819,8 +821,8 @@ class FLExProject (object):
     
     def LexiconGetSenseDefinition(self, sense, languageTagOrHandle=None):
         """
-        Returns the definition for the sense in the Default Analysis WS or
-        other WS as specified by languageTagOrHandle.
+        Returns the definition for the sense in the default analysis WS or
+        other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
@@ -843,16 +845,17 @@ class FLExProject (object):
             
     def LexiconGetSenseSemanticDomains(self, sense):
         """
-        Returns a list of Semantic Domain objects belonging to the sense.
-        ToString() and Hvo are available.
-        """
+        Returns a list of semantic omain objects belonging to the sense.
+        `ToString()` and `Hvo` are available.
 
-        # Methods available for SemanticDomainsRC:
-        #      Count
-        #      Add(Hvo)
-        #      Contains(Hvo)
-        #      Remove(Hvo)
-        #      RemoveAll()
+        Methods available for SemanticDomainsRC::
+        
+             Count
+             Add(Hvo)
+             Contains(Hvo)
+             Remove(Hvo)
+             RemoveAll()
+        """
         
         return list(sense.SemanticDomainsRC)
 
@@ -894,10 +897,11 @@ class FLExProject (object):
 
     def GetFieldID(self, className, fieldName):
         """
-        Return the FieldID ('flid') for the given field of an LCM class.
-        className and fieldName are strings, where fieldName may omit 
-        the type suffix (e.g. 'OS'), and are case-sensitive.
-        For example, find the FieldID for Academic Domains with:
+        Return the `FieldID` ('flid') for the given field of an LCM class.
+        `className` and `fieldName` are strings, where `fieldName` may omit 
+        the type suffix (e.g. 'OS'). Both are case-sensitive.
+        For example, find the `FieldID` for academic domains with::
+        
             GetFieldID("LexSense", "DomainTypes")
         """
 
@@ -936,13 +940,13 @@ class FLExProject (object):
         """
         Returns the field value for String, MultiString, Integer 
         and List (both single and multiple) fields.
-        Raises FP_ParameterError for other field types.
+        Raises `FP_ParameterError` for other field types.
         
-        languageTagOrHandle only applies to MultiStrings; if None the
-        best Analysis or Venacular string is returned. 
+        `languageTagOrHandle` only applies to MultiStrings; if `None` the
+        best analysis or venacular string is returned. 
         
         Note: if the field is a vernacular WS field, then the 
-        languageTagOrHandle must be specified.
+        `languageTagOrHandle` must be specified.
         """
 
         hvo = self.__ValidatedHvo(senseOrEntryOrHvo, fieldID)
@@ -989,8 +993,8 @@ class FLExProject (object):
 
     def LexiconFieldIsStringType(self, fieldID):
         """
-        Returns True if the given field is a simple string type suitable 
-        for use with LexiconAddTagToField(), otherwise returns False.
+        Returns `True` if the given field is a simple string type suitable 
+        for use with `LexiconAddTagToField()`, otherwise returns `False`.
         """
         if not fieldID: raise FP_NullParameterError()
         
@@ -1001,7 +1005,7 @@ class FLExProject (object):
 
     def LexiconFieldIsMultiType(self, fieldID):
         """
-        Returns True if the given field is a multi string type
+        Returns `True` if the given field is a multi string type
         (MultiUnicode or MultiString)
         """
         if not fieldID: raise FP_NullParameterError()
@@ -1013,7 +1017,7 @@ class FLExProject (object):
         
     def LexiconFieldIsAnyStringType(self, fieldID):
         """
-        Returns True if the given field is any of the string types.
+        Returns `True` if the given field is any of the string types.
         """
         if not fieldID: raise FP_NullParameterError()
         
@@ -1029,14 +1033,14 @@ class FLExProject (object):
         Return the text value for the given entry/sense and field ID.
         Provided for use with custom fields.
         Returns the empty string if the value is null.
-        languageTagOrHandle only applies to MultiStrings; if None the
-        default Analysis writing system is returned. 
+        `languageTagOrHandle` only applies to MultiStrings; if `None` the
+        default analysis writing system is returned. 
         
-        Note: if the field is a vernacular WS field, then the 
-        languageTagOrHandle must be specified.
+        Note: if the field is a vernacular WS field, then 
+        `languageTagOrHandle` must be specified.
 
-        For normal fields the object can be used directly with 
-        get_String(). E.g.::
+        For normal fields, the object can be used directly with 
+        `get_String()`. E.g.::
         
             lexForm = lexEntry.LexemeFormOA
             lexEntryValue = ITsString(lexForm.Form.get_String(WSHandle)).Text
@@ -1063,7 +1067,7 @@ class FLExProject (object):
         to the default analysis WS).
 
         For normal fields the object can be used directly with
-        set_String(). E.g.::
+        `set_String()`. E.g.::
         
             lexForm = lexEntry.LexemeFormOA
             mkstr = TsStringUtils.MakeString("text to write", WSHandle) 
@@ -1178,7 +1182,7 @@ class FLExProject (object):
 
     def ListFieldPossibilityList(self, senseOrEntry, fieldID):
         """
-        Return the CmPossibilityList object for the given list field.
+        Return the `CmPossibilityList` object for the given list field.
         Raises an exception if the field is not a list (single/Atomic
         or multiple/Collection)
         """
@@ -1196,14 +1200,15 @@ class FLExProject (object):
 
     def ListFieldPossibilities(self, senseOrEntry, fieldID):
         """
-        Returns the PossibilitiesOS for the given list field. This
-        is a list of CmPossibility objects.
+        Returns the `PossibilitiesOS` for the given list field. This
+        is a list of `CmPossibility` objects.
         Raises an exception if the field is not a list (single/Atomic
         or multiple/Collection)
         
-        Note: this returns the top-level CmPossibility objects. Subitems 
-        can be found via the SubPossibilitiesOS attribute. Alternatively, 
-        a flat list of all possible options can be obtained with:
+        Note: this returns the top-level `CmPossibility` objects. Subitems 
+        can be found via the `SubPossibilitiesOS` attribute. Alternatively, 
+        a flat list of all possible options can be obtained with::
+        
             options = project.UnpackNestedPossibilityList(possibilities,
                                                           str, 
                                                           True)
@@ -1215,9 +1220,9 @@ class FLExProject (object):
 
     def ListFieldLookup(self, senseOrEntry, fieldID, value):
         """
-        Looks up the value (a string) in the PossibilityList for the
+        Looks up the value (a string) in the `CmPossibilityList` for the
         given field.
-        Returns the CmPossibility object, or None if it can't be found.
+        Returns the `CmPossibility` object, or `None` if it can't be found.
         """
         
         pList = self.ListFieldPossibilityList(senseOrEntry, fieldID)
@@ -1233,13 +1238,14 @@ class FLExProject (object):
                                   possibilityOrString):
         """
         Sets the value for a 'single' (Atomic) list field.
-        possibilityOrString can be a CmPossibility object, or a string.
+        `possibilityOrString` can be a `CmPossibility` object, or a string.
         A string value can be the full name or the abbreviation (case-sensitive).
         
-        Use ListFieldPossibilities() to find the valid values for the list.
+        Use `ListFieldPossibilities()` to find the valid values for the list.
         
         Note: this function is primarily for use with custom fields, 
-        since regular list field values can be assigned directly. E.g.:
+        since regular list field values can be assigned directly. E.g.::
+             
              status_poss = project.ListFieldPossibilities(
                                sense, 
                                project.GetFieldID("LexSense", "Status"))
@@ -1292,16 +1298,16 @@ class FLExProject (object):
                                     listOfValues):
         """
         Sets the value(s) for a 'multiple' (Collection) list field.
-        listOfValues can be a list of:
-            - CmPossibility objects; or
-            - CmPossibility hvos; or
-            - str (either the full name or the abbreviation; 
-                   case-sensitive).
+        `listOfValues` can be a list of:
+        
+            - `CmPossibility` objects; or
+            - `CmPossibility` hvos; or
+            - `str` (either the full name or the abbreviation; case-sensitive).
 
-        Use ListFieldPossibilities() to find the valid values for the list.
+        Use `ListFieldPossibilities()` to find the valid values for the list.
         
         Note: this function is primarily for use with custom fields, 
-        since regular fields can use the Add(), Remove() and Clear() 
+        since regular fields can use the `Add()`, `Remove()` and `Clear()` 
         methods of the field itself (see LcmReferenceCollection).
         """
         
@@ -1366,7 +1372,7 @@ class FLExProject (object):
 
     def LexiconGetEntryCustomFields(self):
         """
-        Returns a list of the custom fields defined at Entry level.
+        Returns a list of the custom fields defined at entry level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(LexEntryTags.kClassId))
@@ -1374,7 +1380,7 @@ class FLExProject (object):
 
     def LexiconGetSenseCustomFields(self):
         """
-        Returns a list of the custom fields defined at Sense level.
+        Returns a list of the custom fields defined at sense level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(LexSenseTags.kClassId))
@@ -1382,7 +1388,7 @@ class FLExProject (object):
 
     def LexiconGetExampleCustomFields(self):
         """
-        Returns a list of the custom fields defined at Allomorph level.
+        Returns a list of the custom fields defined at example level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(LexExampleSentenceTags.kClassId))
@@ -1390,7 +1396,7 @@ class FLExProject (object):
         
     def LexiconGetAllomorphCustomFields(self):
         """
-        Returns a list of the custom fields defined at Allomorph level.
+        Returns a list of the custom fields defined at allomorph level.
         Each item in the list is a tuple of (flid, label)
         """
         return list(self.__GetCustomFieldsOfType(MoFormTags.kClassId))
@@ -1400,7 +1406,7 @@ class FLExProject (object):
         """
         Return the entry-level field ID given its name.
 
-        NOTE: fieldName is case-sensitive.
+        NOTE: `fieldName` is case-sensitive.
         """
         return self.__FindCustomField(LexEntryTags.kClassId, fieldName)
 
@@ -1409,7 +1415,7 @@ class FLExProject (object):
         """
         Return the sense-level field ID given its name.
 
-        NOTE: fieldName is case-sensitive.
+        NOTE: `fieldName` is case-sensitive.
         """
         return self.__FindCustomField(LexSenseTags.kClassId, fieldName)
 
@@ -1418,17 +1424,18 @@ class FLExProject (object):
     
     def GetLexicalRelationTypes(self):
         """
-        Returns an iterator over LexRefType objects, which define a 
+        Returns an iterator over `LexRefType` objects, which define a 
         type of lexical relation, such as Part-Whole.
 
-        Each LexRefType has:
-            - MembersOC: containing zero or more LexReference objects.
-            - MappingType: an enumeration defining the type of lexical relation.
+        Each `LexRefType` has:
+            - `MembersOC`: containing zero or more `LexReference` objects.
+            - `MappingType`: an enumeration defining the type of lexical relation.
             
-        LexReference objects have:
-            - TargetsRS: the LexSense or LexEntry objects in the relation.
+        `LexReference` objects have:
+            - `TargetsRS`: the `LexSense` or `LexEntry` objects in the relation.
             
-        For example:
+        For example::
+        
             for lrt in project.GetLexicalRelationTypes():
                 if (lrt.MembersOC.Count > 0):
                     for lr in lrt.MembersOC:
@@ -1455,9 +1462,9 @@ class FLExProject (object):
 
     def PublicationType(self, publicationName):
         """
-        Returns the PublicationType object (a CmPossibility) for the
+        Returns the `PublicationType` object (a `CmPossibility`) for the
         given publication name. (A list of publication names can be 
-        found using GetPublications().)
+        found using `GetPublications()`.)
         """
 
         for pub in self.lexDB.PublicationTypesOA.PossibilitiesOS:
@@ -1471,8 +1478,8 @@ class FLExProject (object):
 
     def ReversalIndex(self, languageTag):
         """
-        Returns the ReversalIndex that matches the given languageTag string
-        (eg 'en'). Returns None if there is no reversal index for
+        Returns the reversal index for `languageTag` (eg 'en'). 
+        Returns `None` if there is no reversal index for
         that writing system.
         """
         languageTag = self.__NormaliseLangTag(languageTag)
@@ -1486,8 +1493,7 @@ class FLExProject (object):
 
     def ReversalEntries(self, languageTag):
         """
-        Returns an iterator for the reversal entries for the given language
-        tag (eg 'en'). Returns None if there is no reversal index for
+        Returns an iterator for the reversal entries for `languageTag` (eg 'en'). Returns `None` if there is no reversal index for
         that writing system.
         """
         ri = self.ReversalIndex(languageTag)
@@ -1499,8 +1505,8 @@ class FLExProject (object):
 
     def ReversalGetForm(self, entry, languageTagOrHandle=None):
         """
-        Returns the citation form for the reversal entry in the Default
-        Vernacular WS or other WS as specified by languageTagOrHandle.
+        Returns the citation form for the reversal entry in the default
+        vernacular WS or other WS as specified by `languageTagOrHandle`.
         """
         WSHandle = self.__WSHandleAnalysis(languageTagOrHandle)
         
@@ -1510,9 +1516,9 @@ class FLExProject (object):
 
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
-        Sets the Default Analysis reversal form for the given reversal entry:
-            - form is the new reversal form string.
-            - languageTagOrHandle specifies a non-default writing system.
+        Sets the default analysis reversal form for the given reversal entry:
+            - `form` is the new reversal form string.
+            - `languageTagOrHandle` specifies a non-default writing system.
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError
@@ -1538,12 +1544,13 @@ class FLExProject (object):
 
     def TextsGetAll(self, supplyName=True, supplyText=True):
         """
-        A Generator that returns tuples of (Name, Text) where:
+        A generator that returns all the texts in the project as
+        tuples of (`name`, `text`) where:
         
-            - Name is the best vernacular or analysis name.
-            - Text is a string with newlines separating paragraphs.
+            - `name` is the best vernacular or analysis name.
+            - `text` is a string with newlines separating paragraphs.
             
-        Passing supplyName/Text=False returns only the texts or names.
+        Passing `supplyName`/`Text` = `False` returns only the texts or names.
         """
         
         if not supplyText:

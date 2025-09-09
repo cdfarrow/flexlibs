@@ -669,6 +669,23 @@ class FLExProject (object):
         form = ITsString(entry.LexemeFormOA.Form.get_String(WSHandle)).Text
         return form or ""
 
+
+    def LexiconSetLexemeForm(self, entry, form, languageTagOrHandle=None):
+        """
+        Set the Lexeme Form for the given entry:
+            - form is the new lexeme form string.
+            - languageTagOrHandle specifies a non-default writing system.
+        """
+        if not self.writeEnabled: raise FP_ReadOnlyError
+        
+        if not entry: raise FP_NullParameterError()
+        
+        WSHandle = self.__WSHandleVernacular(languageTagOrHandle)
+        lexForm = entry.LexemeFormOA
+        mkstr = TsStringUtils.MakeString(form, WSHandle) 
+        lexForm.Form.set_String(WSHandle, mkstr)
+        return
+            
         
     def LexiconGetCitationForm(self, entry, languageTagOrHandle=None):
         """
@@ -716,9 +733,8 @@ class FLExProject (object):
     def LexiconSetExample(self, example, newString, languageTagOrHandle=None):
         """
         Set the Default Vernacular string for the given Example:
-        
-            - newString must be unicode.
-            - languageTagOrHandle specifies a different writing system.
+            - newString is the new string value.
+            - languageTagOrHandle specifies a non-default writing system.
 
         NOTE: using this function will lose any formatting that might
         have been present in the example string.
@@ -783,9 +799,8 @@ class FLExProject (object):
     def LexiconSetSenseGloss(self, sense, gloss, languageTagOrHandle=None):
         """
         Set the Default Analysis gloss for the given sense:
-        
-            - gloss must be unicode.
-            - languageTagOrHandle specifies a different writing system.
+            - gloss is the new gloss string.
+            - languageTagOrHandle specifies a non-default writing system.
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError
@@ -1477,9 +1492,8 @@ class FLExProject (object):
     def ReversalSetForm(self, entry, form, languageTagOrHandle=None):
         """
         Sets the Default Analysis reversal form for the given reversal entry:
-        
-            - form must be unicode.
-            - languageTagOrHandle can be used to specify a different writing system.
+            - form is the new reversal form string.
+            - languageTagOrHandle specifies a non-default writing system.
         """
 
         if not self.writeEnabled: raise FP_ReadOnlyError

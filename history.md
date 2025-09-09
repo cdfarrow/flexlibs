@@ -10,6 +10,7 @@ None
 
 + FLExProject functions:
     + Added LexiconClearListFieldSingle() 
+    + Added LexiconSetLexemeForm()
 
 ### 1.2.7 - 25 Aug 2025
 

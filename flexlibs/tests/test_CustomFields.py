@@ -32,7 +32,7 @@ class TestSuite(unittest.TestCase):
 
         except Exception as e:
             self.fail("Exception opening project %s:\n%s" % 
-                      (TEST_PROJECT, e.message))
+                      (TEST_PROJECT, e.Message))
         return fp
 
     def _closeProject(self, fp):
@@ -51,7 +51,7 @@ class TestSuite(unittest.TestCase):
                 fp.LexiconSetFieldText(lexEntry, flags_field, CUSTOM_VALUE)
             except Exception as e:
                 self.fail("Exception writing custom field %s:\n%s" % 
-                            (CUSTOM_FIELD, e.message))
+                            (CUSTOM_FIELD, e.Message))
 
         # Read back and check that the values were written.
         for lexEntry in fp.LexiconAllEntries():

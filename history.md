@@ -11,6 +11,8 @@ None
 + FLExProject functions:
     + Added LexiconClearListFieldSingle() 
     + Added LexiconSetLexemeForm()
+    + Added LexiconGetExampleCustomFields()
+    + Added LexiconGetAllomorphCustomFields()
 
 ### 1.2.7 - 25 Aug 2025
 

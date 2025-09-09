@@ -35,6 +35,8 @@ from SIL.LCModel import (
                             WfiGlossTags,
     IWfiAnalysisRepository, IWfiAnalysis, WfiAnalysisTags,
                             WfiMorphBundleTags,
+    LexExampleSentenceTags,
+    MoFormTags,
     ILexRefTypeRepository,
     ICmPossibilityRepository,
     ICmPossibilityList,
@@ -1342,7 +1344,8 @@ class FLExProject (object):
     
     def __GetCustomFieldsOfType(self, classID):
         """
-        Generator for finding all the custom fields at Sense or Entry level.
+        Generator for finding all the custom fields belonging to the
+        given class.
         Returns tuples of (flid, label)
         """
 
@@ -1377,6 +1380,22 @@ class FLExProject (object):
         return list(self.__GetCustomFieldsOfType(LexSenseTags.kClassId))
 
 
+    def LexiconGetExampleCustomFields(self):
+        """
+        Returns a list of the custom fields defined at Allomorph level.
+        Each item in the list is a tuple of (flid, label)
+        """
+        return list(self.__GetCustomFieldsOfType(LexExampleSentenceTags.kClassId))
+        
+        
+    def LexiconGetAllomorphCustomFields(self):
+        """
+        Returns a list of the custom fields defined at Allomorph level.
+        Each item in the list is a tuple of (flid, label)
+        """
+        return list(self.__GetCustomFieldsOfType(MoFormTags.kClassId))
+        
+        
     def LexiconGetEntryCustomFieldNamed(self, fieldName):
         """
         Return the entry-level field ID given its name.

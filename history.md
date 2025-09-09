@@ -6,7 +6,7 @@ None
 
 ## History
 
-### 1.2.8 - TBD
+### 1.2.8 - 10 Sep 2025
 
 + FLExProject functions:
     + Added LexiconClearListFieldSingle() 

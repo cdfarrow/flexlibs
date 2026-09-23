@@ -54,6 +54,11 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# NuGet overlay restore output (make test-nuget)
+.fw-nuget-overlay/
+tests/nuget-overlay/bin/
+tests/nuget-overlay/obj/
+
 # Translations
 *.mo
 *.pot

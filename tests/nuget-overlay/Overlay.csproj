@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>FlexlibsNugetOverlay</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Pull latest prerelease packages from nuget.org -->
+    <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SIL.LCModel" Version="*-*" />
+    <PackageReference Include="SIL.LCModel.Core" Version="*-*" />
+    <PackageReference Include="SIL.Core" Version="*-*" />
+    <PackageReference Include="SIL.Core.Desktop" Version="*-*" />
+    <PackageReference Include="SIL.WritingSystems" Version="*-*" />
+  </ItemGroup>
+</Project>

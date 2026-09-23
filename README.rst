@@ -33,6 +33,54 @@ Installation
 Run:
 ``pip install flexlibs``
 
+Testing against latest NuGet packages
+-------------------------------------
+
+By default flexlibs loads FieldWorks assemblies from an installed FieldWorks
+9.x tree (discovered via the Windows registry).
+
+For integration testing against newer SIL libraries from nuget.org, restore
+an overlay and run the existing tests::
+
+  make test-nuget
+
+This publishes the latest prerelease ``SIL.LCModel``, ``SIL.Core``,
+``SIL.WritingSystems`` (and related) packages into ``.fw-nuget-overlay`` and
+sets ``FLEXLIBS_ASSEMBLY_DIR`` so those DLLs shadow the copies from the
+FieldWorks install. App assemblies such as ``FwUtils`` still come from
+FieldWorks.
+
+Environment overrides (useful for CI without a Windows installer)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``FLEXLIBS_FW_CODE_DIR`` — directory containing ``FieldWorks.exe`` and app DLLs
+- ``FLEXLIBS_FW_PROJECTS_DIR`` — FieldWorks projects directory (required when
+  ``FLEXLIBS_FW_CODE_DIR`` is set)
+- ``FLEXLIBS_ASSEMBLY_DIR`` — optional folder of DLLs prepended on the assembly
+  search path (set automatically by ``make test-nuget``)
+
+When the code/projects env vars are set, registry discovery is skipped. You
+still need a complete FieldWorks binary tree (install or unzipped build) plus
+matching Python bitness; NuGet alone does not supply ``FwUtils`` /
+``FieldWorks.exe``.
+
+Requires the .NET SDK (for ``dotnet publish``) in addition to the normal
+test prerequisites.
+
+The custom-field write test needs a FieldWorks project with an entry-level
+custom text field. Defaults are project ``__flexlibs_testing`` and field
+``EntryFlags``; override with::
+
+  set FLEXLIBS_TEST_PROJECT=MyProject
+  set FLEXLIBS_TEST_CUSTOM_FIELD=MyCustomField
+
+The other tests use any project already present in the projects directory.
+
+Skip the custom-field test (or pass any pytest args)::
+
+  .\make.bat test-nuget -k "not CustomFields"
+
+
 Usage
 -----
 

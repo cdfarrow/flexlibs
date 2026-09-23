@@ -55,6 +55,11 @@ FWRegKeys = {
                 "9" : r"SOFTWARE\SIL\FieldWorks\9",
             }
 
+# Env overrides (CI / no-installer layouts). Checked before registry.
+ENV_FW_CODE_DIR = "FLEXLIBS_FW_CODE_DIR"
+ENV_FW_PROJECTS_DIR = "FLEXLIBS_FW_PROJECTS_DIR"
+ENV_ASSEMBLY_DIR = "FLEXLIBS_ASSEMBLY_DIR"
+
 
 # ----------------------------------------------------------------
 def GetFWRegKey():
@@ -87,19 +92,7 @@ def GetFWRegKey():
 
 # -------------------------------------------------------------------
 
-def InitialiseFWGlobals():
-    global FWCodeDir
-    global FWProjectsDir
-    global FWExecutable
-    global FWShortVersion
-    global FWLongVersion
-
-    try:
-        rKey = GetFWRegKey()
-    except Exception as e:
-        logging.exception("Couldn't find FieldWorks registry entry")
-        raise
-
+def _resolveCodeDirFromRegistry(rKey):
     if platform.system() == "Linux":
         # **********************************************************
         # TODO: First attempt at Linux support. 
@@ -116,15 +109,12 @@ def InitialiseFWGlobals():
         # which in turn calls /usr/lib/fieldworks/run-app FieldWorks.exe etc.
         #
         # The following is based on the logic in /usr/lib/fieldworks/environ
-        FWCodeDir = os.path.join(rKey.GetValue(FWREG_CODEDIR), "../../lib/fieldworks")
+        codeDir = os.path.join(rKey.GetValue(FWREG_CODEDIR), "../../lib/fieldworks")
     else:
         # On windows, FWREG_CODEDIR is correct.
-        FWCodeDir = rKey.GetValue(FWREG_CODEDIR)
+        codeDir = rKey.GetValue(FWREG_CODEDIR)
 
-    # FWREG_PROJECTSDIR is correct on Windows and Linux.
-    FWProjectsDir = rKey.GetValue(FWREG_PROJECTSDIR)
-
-    if not os.access(os.path.join(FWCodeDir, "FieldWorks.exe"), os.F_OK):
+    if not os.access(os.path.join(codeDir, "FieldWorks.exe"), os.F_OK):
         # On developer's machines we also check the build directories 
         # for FieldWorks.exe
         if platform.system() == "Linux":
@@ -134,25 +124,98 @@ def InitialiseFWGlobals():
         else:
             # Windows
             devPaths = [
-                os.path.join(FWCodeDir, r"..\Output\Release\\"),
-                os.path.join(FWCodeDir, r"..\Output\Debug\\"),
+                os.path.join(codeDir, r"..\Output\Release\\"),
+                os.path.join(codeDir, r"..\Output\Debug\\"),
                 ]
 
         for p in devPaths:
             if os.access(os.path.join(p, "FieldWorks.exe"), os.F_OK):
-                FWCodeDir = p
-                break
-        else:
-            # This can happen if there is a ghost registry entry for 
-            # an uninstalled FLEx
-            msg = "FieldWorks.exe not found in %s" \
-                            % FWCodeDir
-            logger.error(msg)
-            raise Exception(msg)
+                return p
+
+        msg = "FieldWorks.exe not found in %s" % codeDir
+        logger.error(msg)
+        raise Exception(msg)
+
+    return codeDir
+
+
+def _resolvePathsFromEnv():
+    """
+    Resolve FWCodeDir / FWProjectsDir from FLEXLIBS_* env vars.
+    Returns (codeDir, projectsDir) or None if FLEXLIBS_FW_CODE_DIR is unset.
+    """
+    codeDir = os.environ.get(ENV_FW_CODE_DIR)
+    if not codeDir:
+        return None
+
+    codeDir = os.path.abspath(codeDir)
+    if not os.path.isdir(codeDir):
+        raise Exception("%s is not a directory: %s" % (ENV_FW_CODE_DIR, codeDir))
+    if not os.access(os.path.join(codeDir, "FieldWorks.exe"), os.F_OK):
+        raise Exception("FieldWorks.exe not found in %s=%s" % (ENV_FW_CODE_DIR, codeDir))
+
+    projectsDir = os.environ.get(ENV_FW_PROJECTS_DIR)
+    if not projectsDir:
+        raise Exception(
+            "%s is set but %s is missing (required for env-based discovery)"
+            % (ENV_FW_CODE_DIR, ENV_FW_PROJECTS_DIR))
+
+    projectsDir = os.path.abspath(projectsDir)
+    if not os.path.isdir(projectsDir):
+        raise Exception("%s is not a directory: %s" % (ENV_FW_PROJECTS_DIR, projectsDir))
+
+    logger.info("Using FieldWorks paths from environment")
+    return codeDir, projectsDir
+
+
+def _applyAssemblyOverlay():
+    """
+    If FLEXLIBS_ASSEMBLY_DIR is set, prepend it to sys.path so NuGet
+    (or other) DLLs shadow copies from the FieldWorks code directory.
+    """
+    overlayDir = os.environ.get(ENV_ASSEMBLY_DIR)
+    if not overlayDir:
+        return None
+
+    overlayDir = os.path.abspath(overlayDir)
+    if not os.path.isdir(overlayDir):
+        raise Exception("%s is not a directory: %s" % (ENV_ASSEMBLY_DIR, overlayDir))
+
+    dlls = [f for f in os.listdir(overlayDir) if f.lower().endswith(".dll")]
+    if not dlls:
+        raise Exception("%s contains no DLLs: %s" % (ENV_ASSEMBLY_DIR, overlayDir))
+
+    sys.path.insert(0, overlayDir)
+    logger.info("Assembly overlay active: %s (%d DLLs)" % (overlayDir, len(dlls)))
+    return overlayDir
+
+
+def InitialiseFWGlobals():
+    global FWCodeDir
+    global FWProjectsDir
+    global FWExecutable
+    global FWShortVersion
+    global FWLongVersion
+
+    envPaths = _resolvePathsFromEnv()
+    if envPaths:
+        FWCodeDir, FWProjectsDir = envPaths
+    else:
+        try:
+            rKey = GetFWRegKey()
+        except Exception as e:
+            logging.exception("Couldn't find FieldWorks registry entry")
+            raise
+
+        FWCodeDir = _resolveCodeDirFromRegistry(rKey)
+        # FWREG_PROJECTSDIR is correct on Windows and Linux.
+        FWProjectsDir = rKey.GetValue(FWREG_PROJECTSDIR)
+        logger.info("Using FieldWorks paths from registry")
 
     FWExecutable = os.path.join(FWCodeDir, "FieldWorks.exe")
-    
-    # Add the FW code directory to the search path for importing FW libs.
+
+    # Optional NuGet/other overlay first, then the FieldWorks code dir.
+    _applyAssemblyOverlay()
     sys.path.append(FWCodeDir)
 
     logger.info("sys.path = \n\t%s" % "\n\t".join(sys.path))
@@ -172,3 +235,11 @@ def InitialiseFWGlobals():
     logger.info("FWShortVersion = %s" % FWShortVersion)
     logger.info("FWLongVersion = %s" % FWLongVersion)
 
+    # When overlaying NuGet packages, log where a key SIL assembly loaded from.
+    try:
+        clr.AddReference("SIL.LCModel")
+        from SIL.LCModel import LcmCache
+        lcmAsm = Assembly.GetAssembly(LcmCache)
+        logger.info("SIL.LCModel loaded from %s" % lcmAsm.Location)
+    except Exception:
+        logger.debug("Could not report SIL.LCModel load location", exc_info=True)

@@ -1,14 +1,17 @@
 from builtins import str
 
+import os
 import unittest
 
 from flexlibs import FLExInitialize, FLExCleanup
 from flexlibs import FLExProject, AllProjectNames, FP_FileLockedError
 
 # --- Constants ---
+# Override with FLEXLIBS_TEST_PROJECT / FLEXLIBS_TEST_CUSTOM_FIELD.
+# The project must have an entry-level custom text field with that name.
 
-TEST_PROJECT = r"__flexlibs_testing"
-CUSTOM_FIELD = r"EntryFlags"
+TEST_PROJECT = os.environ.get("FLEXLIBS_TEST_PROJECT", r"__flexlibs_testing")
+CUSTOM_FIELD = os.environ.get("FLEXLIBS_TEST_CUSTOM_FIELD", r"EntryFlags")
 CUSTOM_VALUE = r"Test.Value"
 
 #----------------------------------------------------------- 
@@ -32,7 +35,7 @@ class TestSuite(unittest.TestCase):
 
         except Exception as e:
             self.fail("Exception opening project %s:\n%s" % 
-                      (TEST_PROJECT, e.Message))
+                      (TEST_PROJECT, e))
         return fp
 
     def _closeProject(self, fp):
@@ -42,7 +45,8 @@ class TestSuite(unittest.TestCase):
         fp = self._openProject()
         flags_field = fp.LexiconGetEntryCustomFieldNamed(CUSTOM_FIELD)
         if not flags_field:
-            self.fail("Entry-level custom field named '%s' not found." % CUSTOM_FIELD)
+            self.fail("Entry-level custom field named '%s' not found in project '%s'."
+                      % (CUSTOM_FIELD, TEST_PROJECT))
             
         # Traverse the whole lexicon
         for lexEntry in fp.LexiconAllEntries():
@@ -51,7 +55,7 @@ class TestSuite(unittest.TestCase):
                 fp.LexiconSetFieldText(lexEntry, flags_field, CUSTOM_VALUE)
             except Exception as e:
                 self.fail("Exception writing custom field %s:\n%s" % 
-                            (CUSTOM_FIELD, e.Message))
+                            (CUSTOM_FIELD, e))
 
         # Read back and check that the values were written.
         for lexEntry in fp.LexiconAllEntries():
